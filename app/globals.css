@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Delicatus";
+  src: url("/fonts/delicatus.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Delicatus", sans-serif;
+  --font-delicatus: "Delicatus", sans-serif;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #ffffff;
+  font-family: "Delicatus", sans-serif;
+}
+
+html.light {
+  background-color: #ffffff;
+  color-scheme: light;
+}
+
+html.dark {
+  background-color: #000000;
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100vh;
+  margin: 0;
+  background: rgb(255 255 255);
+  background-image: none;
+  color: rgb(15 23 42);
+  font-family: "Delicatus", sans-serif;
+}
+
+html.dark body {
+  background: rgb(0 0 0);
+  background-image: none;
+  color: rgb(241 245 249);
+}
+
+html.light body {
+  background: rgb(255 255 255);
+  background-image: none;
+  color: rgb(15 23 42);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.squiggle {
+  display: inline-block;
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: rgb(163 163 163 / 0.8);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.18em;
+  text-decoration-skip-ink: none;
+}
+
+.dark .squiggle {
+  text-decoration-color: rgb(115 115 115 / 0.9);
+}
