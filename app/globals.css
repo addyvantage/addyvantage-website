@@ -60,17 +60,3 @@ html.light body {
 * {
   box-sizing: border-box;
 }
-
-.squiggle {
-  display: inline-block;
-  text-decoration-line: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: rgb(163 163 163 / 0.8);
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 0.18em;
-  text-decoration-skip-ink: none;
-}
-
-.dark .squiggle {
-  text-decoration-color: rgb(115 115 115 / 0.9);
-}

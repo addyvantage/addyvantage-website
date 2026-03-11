@@ -92,7 +92,7 @@ export default function HomePage() {
             <p>
               if you&apos;re curious, here are{" "}
               <Link
-                className="squiggle text-black transition-colors hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
+                className="text-black transition-colors hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                 href="/things-about-me"
               >
                 some fun things about me
