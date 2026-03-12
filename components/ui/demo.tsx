@@ -53,7 +53,7 @@ const data = [
     icon: (
       <ResumeIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
     ),
-    href: '#',
+    href: 'https://drive.google.com/file/d/1gntt-i9O9XRa7keBki_H8-t2xWSnF1Hh/view?usp=drive_link',
   },
   {
     title: 'Email',
@@ -115,7 +115,7 @@ export function AppleStyleDock() {
             </DockIcon>
           </DockItem>
         </Link>
-        <a href='#blog'>
+        <a href='/blog'>
           <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
             <DockLabel>Blog</DockLabel>
             <DockIcon>
@@ -123,12 +123,14 @@ export function AppleStyleDock() {
             </DockIcon>
           </DockItem>
         </a>
-        <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
-          <DockLabel>{data[4].title}</DockLabel>
-          <DockIcon>
-            <ResumeIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
-          </DockIcon>
-        </DockItem>
+        <a href={data[4].href} rel='noopener noreferrer' target='_blank'>
+          <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
+            <DockLabel>{data[4].title}</DockLabel>
+            <DockIcon>
+              <ResumeIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+            </DockIcon>
+          </DockItem>
+        </a>
         <div className='mx-0.5 h-5 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
         {[data[1], data[2], data[3], data[5]].map((item, idx) => (
           <a

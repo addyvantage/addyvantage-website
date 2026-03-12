@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { HomeDock } from "@/components/AppBar";
+import { PixelFrame } from "@/components/ui/pixel-frame";
 import {
   blogTopics,
   getFeaturedPost,
@@ -43,10 +44,11 @@ export default function BlogPage() {
           </div>
 
           <Link
-            className="group block max-w-3xl overflow-hidden rounded-[28px] border border-slate-900/12 bg-white/80 px-6 py-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-colors duration-200 hover:border-slate-900/24 dark:border-white/12 dark:bg-black/70 dark:shadow-[0_0_40px_rgba(255,255,255,0.04)] dark:hover:border-white/20 sm:px-7 sm:py-7 md:px-8 md:py-8"
+            className="pixel-panel group block max-w-3xl overflow-hidden bg-white/80 px-6 py-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-colors duration-200 dark:bg-black/70 dark:shadow-[0_0_40px_rgba(255,255,255,0.04)] sm:px-7 sm:py-7 md:px-8 md:py-8"
             href={`/blog/${featuredPost.slug}`}
           >
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.88rem] uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
+            <PixelFrame variant="panel" />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.98rem] uppercase tracking-[0.18em] text-neutral-700 dark:text-neutral-300">
               <span>{featuredPost.date}</span>
               <span className="h-1 w-1 rounded-full bg-neutral-400 dark:bg-neutral-600" />
               <span>{featuredPost.readTime}</span>
@@ -61,9 +63,10 @@ export default function BlogPage() {
               {featuredPost.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2.5 py-1 text-[0.75rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                  className="pixel-capsule min-h-[34px] px-3 py-0 text-[0.88rem] uppercase tracking-[0.14em] text-slate-700 dark:text-white"
                 >
-                  {tag}
+                  <PixelFrame variant="capsule" />
+                  <span className="pixel-capsule-label">{tag}</span>
                 </span>
               ))}
             </div>
@@ -122,9 +125,10 @@ export default function BlogPage() {
             {blogTopics.map((topic) => (
               <span
                 key={topic}
-                className="inline-flex items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-3 py-1.5 text-[0.78rem] uppercase tracking-[0.15em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                className="pixel-capsule min-h-[40px] px-3.5 py-0 text-[0.96rem] uppercase tracking-[0.15em] text-slate-700 dark:text-white"
               >
-                {topic}
+                <PixelFrame variant="capsule" />
+                <span className="pixel-capsule-label">{topic}</span>
               </span>
             ))}
           </div>
@@ -143,12 +147,13 @@ export default function BlogPage() {
             {shortNotes.map((note) => (
               <div
                 key={note.title}
-                className="rounded-[22px] border border-slate-900/10 bg-slate-900/[0.03] px-4 py-4 dark:border-white/10 dark:bg-white/[0.03]"
+                className="pixel-panel bg-slate-900/[0.03] px-5 py-5 dark:bg-white/[0.03]"
               >
-                <p className="text-[0.98rem] leading-relaxed text-black dark:text-white">
+                <PixelFrame variant="panel" />
+                <p className="text-[1.22rem] leading-relaxed text-black dark:text-white md:text-[1.3rem]">
                   {note.title}
                 </p>
-                <p className="mt-3 text-[0.92rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                <p className="mt-3 text-[1.1rem] leading-relaxed text-neutral-600 dark:text-neutral-400 md:text-[1.16rem]">
                   {note.body}
                 </p>
               </div>

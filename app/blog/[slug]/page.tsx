@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { HomeDock } from "@/components/AppBar";
+import { PixelFrame } from "@/components/ui/pixel-frame";
 import { blogPosts, getPostBySlug } from "@/data/blog-posts";
 
 type BlogPostPageProps = {
@@ -47,9 +48,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2.5 py-1 text-[0.75rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                className="pixel-capsule min-h-[29px] px-2.5 py-0 text-[0.75rem] uppercase tracking-[0.14em] text-slate-500 dark:text-neutral-400"
               >
-                {tag}
+                <PixelFrame variant="capsule" />
+                <span className="pixel-capsule-label">{tag}</span>
               </span>
             ))}
           </div>
