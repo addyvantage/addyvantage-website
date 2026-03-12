@@ -424,10 +424,14 @@ function WorkTimeline() {
 }
 
 function MobileWorkTimeline() {
-  const containerRef = useRef<HTMLElement | null>(null);
   const sectionRefs = useRef<Array<HTMLElement | null>>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [progressRatio, setProgressRatio] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [activeIndex]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -502,60 +506,31 @@ function MobileWorkTimeline() {
   }, []);
 
   return (
-    <section
-      ref={containerRef}
-      className="relative bg-white px-4 pb-28 pt-6 dark:bg-neutral-950 sm:px-5"
-    >
-      <div className="mx-auto grid max-w-xl grid-cols-[52px_minmax(0,1fr)] gap-x-4">
-        <div className="relative">
-          <div className="sticky top-24 h-[calc(100svh-8rem)]">
-            <div className="absolute left-[13px] top-16 h-[calc(100%-7rem)] w-px bg-slate-300/80 dark:bg-white/12" />
-            <div
-              className="absolute left-[13px] top-16 w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] transition-[height] duration-300 ease-out dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
-              style={{ height: `calc((100% - 7rem) * ${progressRatio})` }}
-            />
-            {workTimelineData.map((item, index) => {
-              const dotTop =
-                workTimelineData.length === 1
-                  ? "4rem"
-                  : `calc(4rem + ${(index / (workTimelineData.length - 1)).toFixed(4)} * (100% - 7rem))`;
-              const isActive = index === activeIndex;
-              const isComplete = index < activeIndex;
-
-              return (
-                <div
-                  key={item.id}
-                  className="absolute left-0"
-                  style={{ top: dotTop }}
-                >
-                  {isActive ? (
-                    <div className="absolute left-0 -translate-y-1/2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[0.95rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none">
-                      {item.dateLabel}
-                    </div>
-                  ) : null}
-                  <span
-                    className={`absolute left-[7px] top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border transition-colors duration-300 ${
-                      isActive || isComplete
-                        ? "border-slate-900 bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.16)] dark:border-white dark:bg-white dark:shadow-[0_0_16px_rgba(255,255,255,0.22)]"
-                        : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950"
-                    }`}
-                  />
-                </div>
-              );
-            })}
-          </div>
+    <section className="relative bg-white px-4 pb-28 pt-6 dark:bg-neutral-950 sm:px-5">
+      <div className="mx-auto max-w-xl">
+        <div className="sticky top-[5.5rem] z-10 grid grid-cols-[minmax(0,1fr)_58px] items-start gap-x-4">
+          <MobileActiveWorkCard
+            isExpanded={isExpanded}
+            item={workTimelineData[activeIndex]}
+            onToggle={() => {
+              setIsExpanded((current) => !current);
+            }}
+          />
+          <MobileStickyTimeline
+            activeIndex={activeIndex}
+            progressRatio={progressRatio}
+          />
         </div>
 
-        <div className="space-y-0">
+        <div className="pointer-events-none -mt-[calc(100svh-11rem)]">
           {workTimelineData.map((item, index) => (
-            <MobileWorkTimelineSection
+            <section
               key={item.id}
-              activeIndex={activeIndex}
-              index={index}
-              item={item}
-              sectionRef={(node) => {
+              ref={(node) => {
                 sectionRefs.current[index] = node;
               }}
+              aria-hidden="true"
+              className="min-h-[84svh]"
             />
           ))}
         </div>
@@ -564,94 +539,140 @@ function MobileWorkTimeline() {
   );
 }
 
-function MobileWorkTimelineSection({
-  item,
-  index,
+function MobileStickyTimeline({
   activeIndex,
-  sectionRef,
+}: {
+  activeIndex: number;
+  progressRatio: number;
+}) {
+  return (
+    <div className="relative h-[calc(100svh-9rem)]">
+      <div className="sticky top-0 h-full">
+        <div className="absolute right-[13px] top-9 h-[calc(100%-4.5rem)] w-px bg-slate-300/80 dark:bg-white/12" />
+        <div
+          className="absolute right-[13px] top-9 w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] transition-[height] duration-300 ease-out dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
+          style={{ height: `calc((100% - 4.5rem) * ${progressRatio})` }}
+        />
+        {workTimelineData.map((item, index) => {
+          const dotTop =
+            workTimelineData.length === 1
+              ? "2.25rem"
+              : `calc(2.25rem + ${(index / (workTimelineData.length - 1)).toFixed(4)} * (100% - 4.5rem))`;
+          const isActive = index === activeIndex;
+          const isComplete = index < activeIndex;
+
+          return (
+            <div
+              key={item.id}
+              className="absolute right-0"
+              style={{ top: dotTop }}
+            >
+              {isActive ? (
+                <div className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none">
+                  {item.dateLabel}
+                </div>
+              ) : null}
+              <span
+                className={`absolute right-[7px] top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border transition-colors duration-300 ${
+                  isActive || isComplete
+                    ? "border-slate-900 bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.16)] dark:border-white dark:bg-white dark:shadow-[0_0_16px_rgba(255,255,255,0.22)]"
+                    : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950"
+                }`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MobileActiveWorkCard({
+  item,
+  isExpanded,
+  onToggle,
 }: {
   item: WorkTimelineItem;
-  index: number;
-  activeIndex: number;
-  sectionRef: (node: HTMLElement | null) => void;
+  isExpanded: boolean;
+  onToggle: () => void;
 }) {
-  const isActive = index === activeIndex;
   const actionLinks = [
     item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
     item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
   ].filter((link): link is { href: string; label: string } => link !== null);
-  const panelState = useMemo(
-    () =>
-      isActive
-        ? "border-slate-900/24 bg-white/96 shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)]"
-        : "border-slate-900/14 bg-white/88 shadow-[0_16px_40px_rgba(15,23,42,0.08)] dark:border-white/14 dark:bg-black/82 dark:shadow-none",
-    [isActive]
+  const detailsState = useMemo(
+    () => (isExpanded ? "max-h-[34rem] opacity-100 pt-4" : "max-h-0 opacity-0 pt-0"),
+    [isExpanded]
   );
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative flex min-h-[86svh] items-center py-10"
-    >
-      <div
-        className={`w-full rounded-[26px] border px-5 py-6 backdrop-blur-md transition-all duration-300 sm:px-6 ${
-          panelState
-        }`}
+    <div className="flex min-h-[calc(100svh-9rem)] items-center">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full text-left"
+        aria-expanded={isExpanded}
       >
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <p className="text-[0.9rem] font-semibold uppercase tracking-[0.22em] text-neutral-600 dark:text-neutral-200">
-              {item.tagline}
-            </p>
-            <h2 className="text-[1.72rem] font-semibold leading-tight text-slate-900 dark:text-white">
-              {item.heading}
-            </h2>
-            <p className="text-[1.01rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
-              {item.description}
-            </p>
-          </div>
-
-          <div
-            className={`overflow-hidden border-t border-slate-900/10 pt-4 transition-all duration-300 dark:border-white/10 ${
-              isActive ? "max-h-[38rem] opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            <div className="space-y-5">
-              <p className="text-[0.98rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
-                {item.details}
+        <div className="max-h-[calc(100svh-10rem)] w-full overflow-y-auto rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6">
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
+                {item.tagline}
               </p>
-              <div className="flex flex-wrap gap-1.5">
-                {item.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
-                  >
-                    <span className="max-w-full whitespace-normal break-words leading-tight">
-                      {skill}
-                    </span>
-                  </span>
-                ))}
-              </div>
-              {actionLinks.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  {actionLinks.map((link) => (
-                    <a
-                      key={link.label}
-                      className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.82rem] font-medium uppercase tracking-[0.16em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
-                      href={link.href}
-                      rel="noopener noreferrer"
-                      target="_blank"
+              <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
+                {item.heading}
+              </h2>
+              <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
+                {item.description}
+              </p>
+            </div>
+
+            <div
+              className={`overflow-hidden border-t border-slate-900/10 transition-all duration-300 dark:border-white/10 ${detailsState}`}
+            >
+              <div className="space-y-5">
+                <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                  {item.details}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {item.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
                     >
-                      {link.label}
-                    </a>
+                      <span className="max-w-full whitespace-normal break-words leading-tight">
+                        {skill}
+                      </span>
+                    </span>
                   ))}
                 </div>
-              ) : null}
+                {actionLinks.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {actionLinks.map((link) => (
+                      <a
+                        key={link.label}
+                        className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                        href={link.href}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="pt-1">
+              <span className="inline-flex rounded-full border border-slate-900/12 px-3 py-1.5 text-[0.72rem] uppercase tracking-[0.2em] text-slate-700 dark:border-white/12 dark:text-neutral-200">
+                {isExpanded ? "Tap To Collapse" : "Tap To Expand"}
+              </span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </button>
+    </div>
   );
 }
 
