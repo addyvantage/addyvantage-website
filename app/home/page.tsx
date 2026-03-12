@@ -197,7 +197,7 @@ export default function HomePage() {
                     </h3>
                   </div>
                 )}
-                <p className="mt-1 text-[1.2rem] text-neutral-500 dark:text-neutral-400 md:text-[1.28rem]">
+                <p className="mt-1 text-[1.2rem] text-neutral-600 dark:text-neutral-300 md:text-[1.28rem]">
                   {project.description}
                 </p>
                 <div className="mt-2.5">
@@ -205,10 +205,10 @@ export default function HomePage() {
                     {project.points.map((point, index) => (
                       <div key={point} className="relative pl-6">
                         {project.title !== "small experiments" && index < project.points.length - 1 ? (
-                          <span className="absolute left-[2.5px] top-[0.76rem] h-[calc(100%+0.5rem)] w-px bg-neutral-500/60 dark:bg-neutral-300/55" />
+                          <span className="absolute left-[2.5px] top-[0.76rem] h-[calc(100%+0.5rem)] w-px bg-black dark:bg-white" />
                         ) : null}
-                        <span className="absolute left-0 top-[0.58rem] h-1.5 w-1.5 rounded-full bg-neutral-500/85 dark:bg-neutral-300/80" />
-                        <p className="text-[1.1rem] leading-relaxed text-neutral-400/95 dark:text-neutral-500 md:text-[1.16rem]">
+                        <span className="absolute left-0 top-[0.58rem] h-1.5 w-1.5 rounded-full bg-black dark:bg-white" />
+                        <p className="text-[1.1rem] leading-relaxed text-neutral-500 dark:text-neutral-400 md:text-[1.16rem]">
                           {point}
                         </p>
                       </div>
@@ -289,6 +289,10 @@ export default function HomePage() {
                   <span className="pixel-capsule-segment pixel-capsule-corner-right-top" />
                   <span className="pixel-capsule-segment pixel-capsule-corner-left-bottom" />
                   <span className="pixel-capsule-segment pixel-capsule-corner-right-bottom" />
+                  <span className="pixel-capsule-segment pixel-capsule-notch-top-left" />
+                  <span className="pixel-capsule-segment pixel-capsule-notch-top-right" />
+                  <span className="pixel-capsule-segment pixel-capsule-notch-bottom-left" />
+                  <span className="pixel-capsule-segment pixel-capsule-notch-bottom-right" />
                 </span>
                 <span className="pixel-capsule-label">{tool}</span>
               </span>
