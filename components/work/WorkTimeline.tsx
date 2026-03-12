@@ -26,10 +26,8 @@ function WorkTimeline() {
   const observerEnabledRef = useRef(false);
   const sectionActiveRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [progressRatio, setProgressRatio] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -47,48 +45,12 @@ function WorkTimeline() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isMobile) return;
-    setMobileExpandedId(null);
-  }, [activeIndex, isMobile]);
-
   useIsomorphicLayoutEffect(() => {
+    if (isMobile) return;
+
     const section = sectionRef.current;
     const stage = stageRef.current;
     gsap.registerPlugin(ScrollTrigger, Observer);
-
-    if (isMobile) {
-      if (!section || !stage) return;
-
-      const lastIndex = workTimelineData.length - 1;
-      const updateMobileProgress = (progress: number) => {
-        const nextRatio = lastIndex <= 0 ? 1 : progress;
-        const nextIndex =
-          lastIndex <= 0 ? 0 : Math.min(lastIndex, Math.round(progress * lastIndex));
-
-        setProgressRatio((current) => (current === nextRatio ? current : nextRatio));
-        setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
-      };
-
-      const mobileTrigger = ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: "bottom bottom",
-        invalidateOnRefresh: true,
-        onRefresh: (self) => {
-          updateMobileProgress(self.progress);
-        },
-        onUpdate: (self) => {
-          updateMobileProgress(self.progress);
-        },
-      });
-
-      ScrollTrigger.refresh();
-
-      return () => {
-        mobileTrigger.kill();
-      };
-    }
 
     const panels = panelRefs.current.filter(
       (panel): panel is HTMLDivElement => panel !== null
@@ -376,39 +338,7 @@ function WorkTimeline() {
   }, [isMobile]);
 
   if (isMobile) {
-    const activeItem = workTimelineData[activeIndex] ?? workTimelineData[0];
-
-    return (
-      <section
-        ref={sectionRef}
-        className="relative overflow-x-hidden bg-white dark:bg-neutral-950"
-        style={{ height: `${Math.max(workTimelineData.length, 1) * 100}svh` }}
-      >
-        <div
-          ref={stageRef}
-          className="sticky top-0 h-[100svh] overflow-hidden bg-white dark:bg-neutral-950"
-        >
-          <div className="mx-auto flex h-full w-full max-w-xl items-center px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] sm:px-5">
-            <div className="grid w-full grid-cols-[minmax(0,1fr)_60px] items-center gap-x-4">
-              <MobilePinnedWorkCard
-                key={activeItem.id}
-                isExpanded={mobileExpandedId === activeItem.id}
-                item={activeItem}
-                onToggle={() => {
-                  setMobileExpandedId((current) =>
-                    current === activeItem.id ? null : activeItem.id
-                  );
-                }}
-              />
-              <MobilePinnedTimeline
-                activeIndex={activeIndex}
-                progressRatio={progressRatio}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-    );
+    return <MobileWorkTimeline />;
   }
 
   const lineStartPercent = 18;
@@ -493,15 +423,153 @@ function WorkTimeline() {
   );
 }
 
+function MobileWorkTimeline() {
+  const wrapperRef = useRef<HTMLElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [progressRatio, setProgressRatio] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [viewportHeight, setViewportHeight] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateViewportHeight = () => {
+      setViewportHeight(window.innerHeight);
+    };
+
+    updateViewportHeight();
+    window.addEventListener("resize", updateViewportHeight);
+    window.addEventListener("orientationchange", updateViewportHeight);
+    window.visualViewport?.addEventListener("resize", updateViewportHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateViewportHeight);
+      window.removeEventListener("orientationchange", updateViewportHeight);
+      window.visualViewport?.removeEventListener("resize", updateViewportHeight);
+    };
+  }, []);
+
+  useEffect(() => {
+    setExpandedId(null);
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let frame = 0;
+    const lastIndex = workTimelineData.length - 1;
+
+    const updateProgress = () => {
+      frame = 0;
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+
+      const currentViewportHeight = window.innerHeight;
+      const maxScrollableDistance = Math.max(
+        wrapper.offsetHeight - currentViewportHeight,
+        1
+      );
+      const currentScroll = Math.max(
+        0,
+        Math.min(maxScrollableDistance, -wrapper.getBoundingClientRect().top)
+      );
+      const nextProgress = lastIndex <= 0 ? 1 : currentScroll / maxScrollableDistance;
+      const nextIndex =
+        lastIndex <= 0 ? 0 : Math.min(lastIndex, Math.round(nextProgress * lastIndex));
+
+      setProgressRatio((current) => (current === nextProgress ? current : nextProgress));
+      setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+    };
+
+    const requestUpdate = () => {
+      if (frame !== 0) return;
+      frame = window.requestAnimationFrame(updateProgress);
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    window.addEventListener("orientationchange", requestUpdate);
+    window.visualViewport?.addEventListener("resize", requestUpdate);
+
+    return () => {
+      if (frame !== 0) {
+        window.cancelAnimationFrame(frame);
+      }
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+      window.removeEventListener("orientationchange", requestUpdate);
+      window.visualViewport?.removeEventListener("resize", requestUpdate);
+    };
+  }, [viewportHeight]);
+
+  const activeItem = workTimelineData[activeIndex] ?? workTimelineData[0];
+  const safeViewportHeight = viewportHeight > 0 ? viewportHeight : 0;
+  const stepHeight = safeViewportHeight > 0 ? Math.round(safeViewportHeight * 0.92) : 0;
+  const wrapperHeight =
+    safeViewportHeight > 0
+      ? safeViewportHeight + stepHeight * Math.max(workTimelineData.length - 1, 0)
+      : null;
+  const stageHeightStyle = safeViewportHeight > 0 ? `${safeViewportHeight}px` : "100svh";
+  const stageContentHeight =
+    safeViewportHeight > 0 ? Math.max(safeViewportHeight - 136, 320) : undefined;
+  const expandedCardMaxHeight =
+    safeViewportHeight > 0 ? Math.max(safeViewportHeight - 176, 280) : undefined;
+
+  return (
+    <section
+      ref={wrapperRef}
+      className="relative overflow-visible bg-white dark:bg-neutral-950"
+      style={
+        wrapperHeight !== null
+          ? { height: `${wrapperHeight}px` }
+          : { height: `${Math.max(workTimelineData.length, 1) * 100}svh` }
+      }
+    >
+      <div
+        className="sticky top-0 bg-white dark:bg-neutral-950"
+        style={{ height: stageHeightStyle }}
+      >
+        <div className="mx-auto flex h-full w-full max-w-xl items-center px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] sm:px-5">
+          <div className="grid w-full grid-cols-[minmax(0,1fr)_60px] items-center gap-x-4">
+            <MobilePinnedWorkCard
+              key={activeItem.id}
+              isExpanded={expandedId === activeItem.id}
+              item={activeItem}
+              minCardHeight={stageContentHeight}
+              maxExpandedHeight={expandedCardMaxHeight}
+              onToggle={() => {
+                setExpandedId((current) =>
+                  current === activeItem.id ? null : activeItem.id
+                );
+              }}
+            />
+            <MobilePinnedTimeline
+              activeIndex={activeIndex}
+              timelineHeight={stageContentHeight}
+              progressRatio={progressRatio}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MobilePinnedTimeline({
   activeIndex,
+  timelineHeight,
   progressRatio,
 }: {
   activeIndex: number;
+  timelineHeight?: number;
   progressRatio: number;
 }) {
   return (
-    <div className="relative h-[calc(100svh-8.5rem)]">
+    <div
+      className="relative"
+      style={timelineHeight ? { height: `${timelineHeight}px` } : { height: "calc(100svh - 8.5rem)" }}
+    >
       <div className="relative h-full">
         <div className="absolute right-[13px] top-10 h-[calc(100%-5rem)] w-px bg-slate-300/80 dark:bg-white/12" />
         <div
@@ -545,10 +613,14 @@ function MobilePinnedTimeline({
 function MobilePinnedWorkCard({
   item,
   isExpanded,
+  minCardHeight,
+  maxExpandedHeight,
   onToggle,
 }: {
   item: WorkTimelineItem;
   isExpanded: boolean;
+  minCardHeight?: number;
+  maxExpandedHeight?: number;
   onToggle: () => void;
 }) {
   const actionLinks = [
@@ -557,12 +629,13 @@ function MobilePinnedWorkCard({
   ].filter((link): link is { href: string; label: string } => link !== null);
 
   return (
-    <div className="flex min-h-[calc(100svh-8.5rem)] items-center">
+    <div
+      className="flex items-center"
+      style={minCardHeight ? { minHeight: `${minCardHeight}px` } : { minHeight: "calc(100svh - 8.5rem)" }}
+    >
       <article
         className={`w-full cursor-pointer overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 text-left shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
-          isExpanded
-            ? "max-h-[calc(100svh-8.5rem)] overflow-y-auto overscroll-contain"
-            : "max-h-[18.75rem]"
+          isExpanded ? "overflow-y-auto overscroll-contain" : ""
         }`}
         aria-expanded={isExpanded}
         onClick={(event) => {
@@ -575,6 +648,7 @@ function MobilePinnedWorkCard({
           onToggle();
         }}
         role="button"
+        style={isExpanded && maxExpandedHeight ? { maxHeight: `${maxExpandedHeight}px` } : undefined}
         tabIndex={0}
       >
         <div className="space-y-4">
