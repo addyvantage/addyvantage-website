@@ -82,12 +82,12 @@ html.dark .squiggle {
 }
 
 .pixel-capsule {
+  --pixel-border-color: rgb(24 24 27 / 0.82);
   position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid rgb(24 24 27 / 0.9);
-  border-radius: 9999px;
   background: transparent;
   transition:
     background-color 140ms ease,
@@ -96,20 +96,50 @@ html.dark .squiggle {
 }
 
 .pixel-capsule::before {
-  content: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--pixel-border-color);
+  clip-path: polygon(
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 2px,
+    calc(100% - 4px) 2px,
+    calc(100% - 4px) 4px,
+    calc(100% - 2px) 4px,
+    calc(100% - 2px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 2px) calc(100% - 8px),
+    calc(100% - 2px) calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 2px),
+    calc(100% - 8px) calc(100% - 2px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 2px),
+    4px calc(100% - 2px),
+    4px calc(100% - 4px),
+    2px calc(100% - 4px),
+    2px calc(100% - 8px),
+    0 calc(100% - 8px),
+    0 8px,
+    2px 8px,
+    2px 4px,
+    4px 4px,
+    4px 2px,
+    8px 2px
+  );
+  pointer-events: none;
 }
 
 .pixel-capsule:hover {
   background: rgb(245 245 245 / 0.08);
 }
 
-.pixel-capsule:hover::before {
-  content: none;
-}
-
 html.dark .pixel-capsule {
+  --pixel-border-color: rgb(255 255 255 / 0.24);
   background-color: transparent;
-  border-color: rgb(255 255 255 / 0.22);
 }
 
 html.dark .pixel-capsule:hover {
