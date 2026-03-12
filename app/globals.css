@@ -86,12 +86,9 @@ html.dark .squiggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgb(255 255 255 / 0.02);
-  border: 3px solid transparent;
-  border-image-slice: 3;
-  border-image-width: 3px;
-  border-image-repeat: stretch;
-  border-image-source: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="%2318181b" fill-rule="evenodd" d="M4 0H8V1H10V2H11V4H12V8H11V10H10V11H8V12H4V11H2V10H1V8H0V4H1V2H2V1H4V0ZM3 1H4V2H3V1ZM8 1H9V2H8V1ZM2 2H4V3H2V2ZM8 2H10V3H8V2ZM1 3H3V4H1V3ZM9 3H11V4H9V3ZM1 4H2V8H1V4ZM10 4H11V8H10V4ZM1 8H3V9H1V8ZM9 8H11V9H9V8ZM2 9H4V10H2V9ZM8 9H10V10H8V9ZM3 10H4V11H3V10ZM8 10H9V11H8V10ZM4 1H8V2H4V1ZM4 10H8V11H4V10Z"/></svg>');
+  border: 1.5px solid rgb(24 24 27 / 0.9);
+  border-radius: 9999px;
+  background: transparent;
   transition:
     background-color 140ms ease,
     color 140ms ease,
@@ -112,7 +109,7 @@ html.dark .squiggle {
 
 html.dark .pixel-capsule {
   background-color: transparent;
-  border-image-source: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="%23ffffff" fill-rule="evenodd" d="M4 0H8V1H10V2H11V4H12V8H11V10H10V11H8V12H4V11H2V10H1V8H0V4H1V2H2V1H4V0ZM3 1H4V2H3V1ZM8 1H9V2H8V1ZM2 2H4V3H2V2ZM8 2H10V3H8V2ZM1 3H3V4H1V3ZM9 3H11V4H9V3ZM1 4H2V8H1V4ZM10 4H11V8H10V4ZM1 8H3V9H1V8ZM9 8H11V9H9V8ZM2 9H4V10H2V9ZM8 9H10V10H8V9ZM3 10H4V11H3V10ZM8 10H9V11H8V10ZM4 1H8V2H4V1ZM4 10H8V11H4V10Z"/></svg>');
+  border-color: rgb(255 255 255 / 0.22);
 }
 
 html.dark .pixel-capsule:hover {
