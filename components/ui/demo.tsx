@@ -84,17 +84,17 @@ export function AppleStyleDock() {
   }, []);
 
   const isDark = mounted && resolvedTheme === 'dark';
-  const iconSize = isMobile ? 18 : 22;
-  const dockMagnification = isMobile ? 44 : 55;
-  const dockDistance = isMobile ? 90 : 120;
-  const dockPanelHeight = isMobile ? 44 : 56;
-  const dockBaseItemSize = isMobile ? 30 : 36;
+  const iconSize = isMobile ? 16 : 22;
+  const dockMagnification = isMobile ? 38 : 55;
+  const dockDistance = isMobile ? 72 : 120;
+  const dockPanelHeight = isMobile ? 40 : 56;
+  const dockBaseItemSize = isMobile ? 26 : 36;
 
   return (
-    <div className='fixed bottom-5 left-1/2 z-50 max-w-[calc(100vw-1rem)] -translate-x-1/2 sm:bottom-8 sm:max-w-full'>
+    <div className='fixed bottom-4 left-1/2 z-50 max-w-[calc(100vw-1.5rem)] -translate-x-1/2 sm:bottom-8 sm:max-w-full'>
       <Dock
         baseItemSize={dockBaseItemSize}
-        className='gap-2 px-3 sm:gap-4 sm:px-6'
+        className='gap-1.5 px-2.5 sm:gap-4 sm:px-6'
         distance={dockDistance}
         magnification={dockMagnification}
         panelHeight={dockPanelHeight}
@@ -129,7 +129,7 @@ export function AppleStyleDock() {
             <ResumeIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
           </DockIcon>
         </DockItem>
-        <div className='mx-0.5 h-6 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
+        <div className='mx-0.5 h-5 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
         {[data[1], data[2], data[3], data[5]].map((item, idx) => (
           <a
             key={`${item.title}-${idx}`}
@@ -153,7 +153,7 @@ export function AppleStyleDock() {
             </DockItem>
           </a>
         ))}
-        <div className='mx-0.5 h-6 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
+        <div className='mx-0.5 h-5 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
         <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
           <DockLabel>Theme</DockLabel>
           <DockIcon>
