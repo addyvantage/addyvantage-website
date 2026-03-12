@@ -83,8 +83,6 @@ html.dark .squiggle {
 
 .pixel-capsule {
   --pixel-border-color: rgb(24 24 27 / 0.82);
-  --pixel-corner: 8px;
-  --pixel-step: 2px;
   position: relative;
   isolation: isolate;
   display: inline-flex;
@@ -101,41 +99,38 @@ html.dark .squiggle {
   content: "";
   position: absolute;
   inset: 0;
+  border: 2px solid var(--pixel-border-color);
   clip-path: polygon(
-    var(--pixel-corner) 0,
-    calc(100% - var(--pixel-corner)) 0,
-    calc(100% - var(--pixel-corner)) var(--pixel-step),
-    calc(100% - (var(--pixel-corner) - 4px)) var(--pixel-step),
-    calc(100% - (var(--pixel-corner) - 4px)) calc(var(--pixel-corner) - 4px),
-    calc(100% - var(--pixel-step)) calc(var(--pixel-corner) - 4px),
-    calc(100% - var(--pixel-step)) calc(100% - (var(--pixel-corner) - 4px)),
-    calc(100% - (var(--pixel-corner) - 4px)) calc(100% - (var(--pixel-corner) - 4px)),
-    calc(100% - (var(--pixel-corner) - 4px)) calc(100% - var(--pixel-step)),
-    calc(100% - var(--pixel-corner)) calc(100% - var(--pixel-step)),
-    calc(100% - var(--pixel-corner)) 100%,
-    var(--pixel-corner) 100%,
-    var(--pixel-corner) calc(100% - var(--pixel-step)),
-    calc(var(--pixel-corner) - 4px) calc(100% - var(--pixel-step)),
-    calc(var(--pixel-corner) - 4px) calc(100% - (var(--pixel-corner) - 4px)),
-    var(--pixel-step) calc(100% - (var(--pixel-corner) - 4px)),
-    var(--pixel-step) calc(var(--pixel-corner) - 4px),
-    calc(var(--pixel-corner) - 4px) calc(var(--pixel-corner) - 4px),
-    calc(var(--pixel-corner) - 4px) var(--pixel-step),
-    var(--pixel-corner) var(--pixel-step)
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 2px,
+    calc(100% - 4px) 2px,
+    calc(100% - 4px) 4px,
+    calc(100% - 2px) 4px,
+    calc(100% - 2px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 2px) calc(100% - 8px),
+    calc(100% - 2px) calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 2px),
+    calc(100% - 8px) calc(100% - 2px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 2px),
+    4px calc(100% - 2px),
+    4px calc(100% - 4px),
+    2px calc(100% - 4px),
+    2px calc(100% - 8px),
+    0 calc(100% - 8px),
+    0 8px,
+    2px 8px,
+    2px 4px,
+    4px 4px,
+    4px 2px,
+    8px 2px
   );
-  background:
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left var(--pixel-corner) top / calc(100% - (var(--pixel-corner) * 2)) var(--pixel-step) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left var(--pixel-corner) bottom / calc(100% - (var(--pixel-corner) * 2)) var(--pixel-step) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left top var(--pixel-corner) / var(--pixel-step) calc(100% - (var(--pixel-corner) * 2)) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) right top var(--pixel-corner) / var(--pixel-step) calc(100% - (var(--pixel-corner) * 2)) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left calc(var(--pixel-corner) - 4px) top var(--pixel-step) / 4px var(--pixel-step) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) right calc(var(--pixel-corner) - 4px) top var(--pixel-step) / 4px var(--pixel-step) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left calc(var(--pixel-corner) - 4px) bottom var(--pixel-step) / 4px var(--pixel-step) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) right calc(var(--pixel-corner) - 4px) bottom var(--pixel-step) / 4px var(--pixel-step) no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left var(--pixel-step) top calc(var(--pixel-corner) - 4px) / var(--pixel-step) 4px no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) right var(--pixel-step) top calc(var(--pixel-corner) - 4px) / var(--pixel-step) 4px no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) left var(--pixel-step) bottom calc(var(--pixel-corner) - 4px) / var(--pixel-step) 4px no-repeat,
-    linear-gradient(var(--pixel-border-color), var(--pixel-border-color)) right var(--pixel-step) bottom calc(var(--pixel-corner) - 4px) / var(--pixel-step) 4px no-repeat;
+  box-sizing: border-box;
   pointer-events: none;
 }
 
