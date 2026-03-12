@@ -541,6 +541,7 @@ function MobileWorkTimeline() {
 
 function MobileStickyTimeline({
   activeIndex,
+  progressRatio,
 }: {
   activeIndex: number;
   progressRatio: number;
