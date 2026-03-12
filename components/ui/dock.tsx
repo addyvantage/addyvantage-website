@@ -25,10 +25,12 @@ const DOCK_HEIGHT = 128;
 const DEFAULT_MAGNIFICATION = 80;
 const DEFAULT_DISTANCE = 150;
 const DEFAULT_PANEL_HEIGHT = 56;
+const DEFAULT_BASE_ITEM_SIZE = 36;
 
 type DockProps = {
   children: React.ReactNode;
   className?: string;
+  baseItemSize?: number;
   distance?: number;
   panelHeight?: number;
   magnification?: number;
@@ -48,6 +50,7 @@ type DockIconProps = {
 };
 
 type DocContextType = {
+  baseItemSize: number;
   mouseX: MotionValue;
   spring: SpringOptions;
   magnification: number;
@@ -76,6 +79,7 @@ function Dock({
   children,
   className,
   spring = { mass: 0.1, stiffness: 150, damping: 12 },
+  baseItemSize = DEFAULT_BASE_ITEM_SIZE,
   magnification = DEFAULT_MAGNIFICATION,
   distance = DEFAULT_DISTANCE,
   panelHeight = DEFAULT_PANEL_HEIGHT,
@@ -115,7 +119,7 @@ function Dock({
         role='toolbar'
         aria-label='Application dock'
       >
-        <DockProvider value={{ mouseX, spring, distance, magnification }}>
+        <DockProvider value={{ mouseX, spring, distance, magnification, baseItemSize }}>
           {children}
         </DockProvider>
       </motion.div>
@@ -126,7 +130,7 @@ function Dock({
 function DockItem({ children, className }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const { distance, magnification, mouseX, spring } = useDock();
+  const { baseItemSize, distance, magnification, mouseX, spring } = useDock();
 
   const isHovered = useMotionValue(0);
 
@@ -138,7 +142,7 @@ function DockItem({ children, className }: DockItemProps) {
   const widthTransform = useTransform(
     mouseDistance,
     [-distance, 0, distance],
-    [36, magnification, 36]
+    [baseItemSize, magnification, baseItemSize]
   );
 
   const width = useSpring(widthTransform, spring);

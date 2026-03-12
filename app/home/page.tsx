@@ -79,25 +79,25 @@ const xUrl = "https://x.com/addyvantage";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen pb-32" id="home">
+    <main className="min-h-screen pb-28 sm:pb-32" id="home">
       <section
         aria-label="Home section"
-        className="mx-auto flex min-h-[36vh] w-full max-w-4xl items-start px-6 pt-16 pb-6 md:min-h-[32vh] md:px-8 md:pt-20 md:pb-8 lg:px-10"
+        className="mx-auto flex w-full max-w-4xl items-start px-5 pb-4 pt-12 sm:px-6 sm:pt-14 md:min-h-[32vh] md:px-8 md:pb-8 md:pt-20 lg:px-10"
         id="home"
       >
-        <div className="mt-10 flex w-full flex-col items-start gap-8 pl-16 md:mt-12 md:flex-row md:items-center md:gap-10 md:pl-28">
-          <div className="max-w-xl">
-            <h1 className="flex items-center gap-2 font-sans text-3xl font-medium leading-[1.05] tracking-tight text-black dark:text-white md:gap-3 md:text-4xl lg:text-5xl">
-              <span>Hey there, addy here</span>
+        <div className="mt-4 flex w-full flex-col items-start gap-6 sm:mt-6 sm:gap-7 md:mt-12 md:flex-row md:items-center md:gap-10 md:pl-28">
+          <div className="max-w-[19rem] sm:max-w-[24rem] md:max-w-xl">
+            <h1 className="flex items-start gap-2 font-sans text-[2.35rem] font-medium leading-[1.02] tracking-tight text-black dark:text-white sm:text-[2.65rem] md:gap-3 md:text-4xl lg:text-5xl">
+              <span className="max-w-[8ch] sm:max-w-none">Hey there, addy here</span>
               <HandIcon
                 aria-hidden="true"
-                className="-translate-y-1 shrink-0 text-black dark:text-white"
+                className="mt-1 shrink-0 scale-[0.72] text-black dark:text-white md:-translate-y-1 md:scale-100"
                 size={48}
               />
             </h1>
-            <div className="mt-0 max-w-xl text-xl leading-tight text-neutral-500 dark:text-neutral-400 md:text-[1.75rem]">
-              <div className="inline-flex items-baseline gap-0">
-                <span>{"currently\u00A0"}</span>
+            <div className="mt-3 max-w-[18rem] text-[1.18rem] leading-[1.15] text-neutral-500 dark:text-neutral-400 sm:max-w-[22rem] sm:text-[1.3rem] md:mt-0 md:max-w-xl md:text-[1.75rem]">
+              <div className="flex flex-wrap items-baseline gap-x-0 gap-y-1">
+                <span>currently&nbsp;</span>
                 <Typewriter
                   text={[
                     "building MCPZero",
@@ -110,20 +110,20 @@ export default function HomePage() {
                   deleteSpeed={28}
                   waitTime={1800}
                   initialDelay={300}
-                  className="text-neutral-500 dark:text-neutral-400"
+                  className="max-w-full text-neutral-500 dark:text-neutral-400"
                   cursorChar="|"
                   cursorClassName="text-neutral-400 dark:text-neutral-500"
                 />
               </div>
             </div>
           </div>
-          <div className="relative h-[96px] w-[96px] overflow-hidden rounded-full border border-neutral-200/80 bg-neutral-100 shadow-sm dark:border-neutral-700/80 dark:bg-neutral-900 md:h-[112px] md:w-[112px]">
+          <div className="relative mt-2 h-[88px] w-[88px] overflow-hidden rounded-full border border-neutral-200/80 bg-neutral-100 shadow-sm dark:border-neutral-700/80 dark:bg-neutral-900 sm:h-[96px] sm:w-[96px] md:mt-0 md:h-[112px] md:w-[112px]">
             <Image
               alt="Addy profile image"
               className="object-cover"
               fill
               priority
-              sizes="(max-width: 768px) 96px, 112px"
+              sizes="(max-width: 640px) 88px, (max-width: 768px) 96px, 112px"
               src={profileImage}
             />
           </div>
@@ -131,21 +131,21 @@ export default function HomePage() {
       </section>
       <section
         aria-label="About section"
-        className="mx-auto mt-4 w-full max-w-4xl px-6 md:px-8 lg:px-10"
+        className="mx-auto mt-10 w-full max-w-4xl px-5 sm:mt-12 sm:px-6 md:mt-4 md:px-8 lg:px-10"
         id="about"
       >
-        <div className="w-full pl-16 md:pl-28">
-          <h2 className="mb-0 text-lg font-semibold text-black dark:text-white md:text-[1.5rem]">
+        <div className="w-full md:pl-28">
+          <h2 className="mb-0 text-[1.02rem] font-semibold text-black dark:text-white sm:text-lg md:text-[1.5rem]">
             about me
           </h2>
-          <div className="max-w-2xl space-y-3 text-lg leading-6 text-neutral-500 dark:text-neutral-400 md:text-[1.25rem]">
+          <div className="max-w-[34rem] space-y-3 text-[1.08rem] leading-[1.55] text-neutral-500 dark:text-neutral-400 sm:text-[1.12rem] md:max-w-2xl md:text-[1.25rem] md:leading-6">
             <p>
               i&apos;ve always been fascinated by the internet.
             </p>
             <p>
               a small group of people can build something once and suddenly it
               exists everywhere.
-              <br />
+              <br className="hidden md:block" />
               in thousands of browsers and millions of pockets.
             </p>
             <p>
@@ -176,28 +176,28 @@ export default function HomePage() {
       </section>
       <section
         aria-label="Things I've built section"
-        className="mx-auto mt-14 w-full max-w-4xl px-6 md:px-8 lg:px-10"
+        className="mx-auto mt-12 w-full max-w-4xl px-5 sm:mt-14 sm:px-6 md:px-8 lg:px-10"
       >
-        <div className="w-full pl-16 md:pl-28">
-          <h2 className="text-lg font-semibold text-black dark:text-white md:text-[1.5rem]">
+        <div className="w-full md:pl-28">
+          <h2 className="text-[1.02rem] font-semibold text-black dark:text-white sm:text-lg md:text-[1.5rem]">
             things i&apos;ve built
           </h2>
-          <p className="mt-1 text-[1.05rem] text-neutral-500 dark:text-neutral-400 md:text-[1.1rem]">
+          <p className="mt-1 text-[0.98rem] text-neutral-500 dark:text-neutral-400 sm:text-[1.02rem] md:text-[1.1rem]">
             a few things i&apos;ve been building recently
           </p>
-          <div className="mt-7 max-w-2xl space-y-9">
+          <div className="mt-6 max-w-[34rem] space-y-8 sm:mt-7 sm:space-y-9 md:max-w-2xl">
             {builtThings.map((project) => (
               <div key={project.title}>
                 {project.href ? (
                   <ProjectLinkTitle href={project.href} title={project.title} />
                 ) : (
                   <div className="text-black dark:text-white">
-                    <h3 className="text-[1.6rem] font-semibold tracking-tight md:text-[1.58rem]">
+                    <h3 className="text-[1.38rem] font-semibold tracking-tight sm:text-[1.48rem] md:text-[1.58rem]">
                       {project.title}
                     </h3>
                   </div>
                 )}
-                <p className="mt-1 text-[1.2rem] text-neutral-600 dark:text-neutral-300 md:text-[1.28rem]">
+                <p className="mt-1 text-[1.04rem] text-neutral-600 dark:text-neutral-300 sm:text-[1.12rem] md:text-[1.28rem]">
                   {project.description}
                 </p>
                 <div className="mt-2.5">
@@ -208,7 +208,7 @@ export default function HomePage() {
                           <span className="absolute left-[2.5px] top-[0.76rem] h-[calc(100%+0.5rem)] w-px bg-black dark:bg-white" />
                         ) : null}
                         <span className="absolute left-0 top-[0.58rem] h-1.5 w-1.5 rounded-full bg-black dark:bg-white" />
-                        <p className="text-[1.1rem] leading-relaxed text-neutral-500 dark:text-neutral-400 md:text-[1.16rem]">
+                        <p className="text-[1rem] leading-relaxed text-neutral-500 dark:text-neutral-400 sm:text-[1.04rem] md:text-[1.16rem]">
                           {point}
                         </p>
                       </div>
@@ -222,20 +222,20 @@ export default function HomePage() {
       </section>
       <section
         aria-label="Education section"
-        className="mx-auto mt-20 w-full max-w-4xl px-6 md:px-8 lg:px-10"
+        className="mx-auto mt-14 w-full max-w-4xl px-5 sm:mt-16 sm:px-6 md:mt-20 md:px-8 lg:px-10"
       >
-        <div className="w-full pl-16 md:pl-28">
-          <h2 className="text-lg font-semibold text-black dark:text-white md:text-[1.5rem]">
+        <div className="w-full md:pl-28">
+          <h2 className="text-[1.02rem] font-semibold text-black dark:text-white sm:text-lg md:text-[1.5rem]">
             education
           </h2>
-          <div className="mt-6 max-w-2xl space-y-5">
+          <div className="mt-5 max-w-[34rem] space-y-4 sm:mt-6 sm:space-y-5 md:max-w-2xl">
             {education.map((entry) => (
                 <div
                 key={entry.institution}
-                className="flex items-start gap-4 md:gap-5"
+                className="flex items-start gap-3 sm:gap-4 md:gap-5"
               >
                 <div
-                  className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full ${entry.logoClassName}`}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full sm:h-12 sm:w-12 md:h-14 md:w-14 ${entry.logoClassName}`}
                 >
                   <Image
                     alt={entry.logoAlt}
@@ -247,14 +247,14 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[1.12rem] font-medium text-black dark:text-white md:text-[1.22rem]">
+                  <h3 className="text-[1rem] font-medium text-black dark:text-white sm:text-[1.06rem] md:text-[1.22rem]">
                     {entry.institution}
                   </h3>
-                  <p className="mt-1 text-[1.06rem] text-neutral-500 dark:text-neutral-400 md:text-[1.12rem]">
+                  <p className="mt-1 text-[0.96rem] text-neutral-500 dark:text-neutral-400 sm:text-[1rem] md:text-[1.12rem]">
                     {entry.program}
                   </p>
                 </div>
-                <div className="shrink-0 pt-0.5 text-right text-[1.02rem] text-neutral-500 dark:text-neutral-400 md:text-[1.08rem]">
+                <div className="shrink-0 pt-0.5 text-right text-[0.86rem] text-neutral-500 dark:text-neutral-400 sm:text-[0.92rem] md:text-[1.08rem]">
                   {entry.years}
                 </div>
               </div>
@@ -264,17 +264,17 @@ export default function HomePage() {
       </section>
       <section
         aria-label="Tools I use section"
-        className="mx-auto mt-16 w-full max-w-4xl px-6 md:px-8 lg:px-10"
+        className="mx-auto mt-14 w-full max-w-4xl px-5 sm:mt-16 sm:px-6 md:px-8 lg:px-10"
       >
-        <div className="w-full pl-16 md:pl-28">
-          <h2 className="text-lg font-semibold text-black dark:text-white md:text-[1.5rem]">
+        <div className="w-full md:pl-28">
+          <h2 className="text-[1.02rem] font-semibold text-black dark:text-white sm:text-lg md:text-[1.5rem]">
             tools i use
           </h2>
-          <div className="mt-6 flex max-w-2xl flex-wrap gap-x-4 gap-y-2.5">
+          <div className="mt-5 flex max-w-[34rem] flex-wrap gap-x-3 gap-y-2 sm:mt-6 sm:gap-x-4 sm:gap-y-2.5 md:max-w-2xl">
             {tools.map((tool) => (
               <span
                 key={tool}
-                className="pixel-capsule min-h-[30px] px-3 py-0 text-[1.04rem] font-medium text-black dark:text-white"
+                className="pixel-capsule min-h-[28px] px-2.5 py-0 text-[0.98rem] font-medium text-black dark:text-white sm:min-h-[30px] sm:px-3 sm:text-[1.04rem]"
               >
                 <span aria-hidden="true" className="pixel-capsule-frame">
                   <span className="pixel-capsule-segment pixel-capsule-top" />
@@ -302,11 +302,11 @@ export default function HomePage() {
       </section>
       <section
         aria-label="Closing CTA section"
-        className="mx-auto mt-24 w-full max-w-4xl px-6 pb-20 md:px-8 md:pb-24 lg:px-10"
+        className="mx-auto mt-16 w-full max-w-4xl px-5 pb-20 sm:mt-20 sm:px-6 md:mt-24 md:px-8 md:pb-24 lg:px-10"
       >
         <div className="flex w-full flex-col items-center justify-center gap-5">
           <span className="h-1.5 w-14 rounded-full bg-neutral-900/80 dark:bg-white/75" />
-          <div className="flex items-center justify-center gap-2 text-center text-[1.6rem] tracking-tight text-neutral-700 dark:text-neutral-200 md:text-[1.9rem]">
+          <div className="flex items-center justify-center gap-2 text-center text-[1.28rem] tracking-tight text-neutral-700 dark:text-neutral-200 sm:text-[1.45rem] md:text-[1.9rem]">
             <span>say hi to me on</span>
             <a
               aria-label="Say hi to me on X"

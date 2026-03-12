@@ -67,27 +67,51 @@ const data = [
 export function AppleStyleDock() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+
+    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    const updateDockMode = () => setIsMobile(mediaQuery.matches);
+
+    updateDockMode();
+    mediaQuery.addEventListener('change', updateDockMode);
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateDockMode);
+    };
   }, []);
 
   const isDark = mounted && resolvedTheme === 'dark';
+  const iconSize = isMobile ? 18 : 22;
+  const dockMagnification = isMobile ? 44 : 55;
+  const dockDistance = isMobile ? 90 : 120;
+  const dockPanelHeight = isMobile ? 44 : 56;
+  const dockBaseItemSize = isMobile ? 30 : 36;
 
   return (
-    <div className='fixed bottom-8 left-1/2 z-50 max-w-full -translate-x-1/2'>
-      <Dock magnification={55} distance={120}>
+    <div className='fixed bottom-5 left-1/2 z-50 max-w-[calc(100vw-1rem)] -translate-x-1/2 sm:bottom-8 sm:max-w-full'>
+      <Dock
+        baseItemSize={dockBaseItemSize}
+        className='gap-2 px-3 sm:gap-4 sm:px-6'
+        distance={dockDistance}
+        magnification={dockMagnification}
+        panelHeight={dockPanelHeight}
+      >
         <Link href='/home'>
           <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
             <DockLabel>{data[0].title}</DockLabel>
-            <DockIcon>{data[0].icon}</DockIcon>
+            <DockIcon>
+              <HomeIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+            </DockIcon>
           </DockItem>
         </Link>
         <Link href='/work'>
           <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
             <DockLabel>Work</DockLabel>
             <DockIcon>
-              <WorkIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
+              <WorkIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
             </DockIcon>
           </DockItem>
         </Link>
@@ -95,15 +119,17 @@ export function AppleStyleDock() {
           <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
             <DockLabel>Blog</DockLabel>
             <DockIcon>
-              <BookTextIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
+              <BookTextIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
             </DockIcon>
           </DockItem>
         </a>
         <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
           <DockLabel>{data[4].title}</DockLabel>
-          <DockIcon>{data[4].icon}</DockIcon>
+          <DockIcon>
+            <ResumeIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+          </DockIcon>
         </DockItem>
-        <div className='mx-1 h-8 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50' />
+        <div className='mx-0.5 h-6 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
         {[data[1], data[2], data[3], data[5]].map((item, idx) => (
           <a
             key={`${item.title}-${idx}`}
@@ -113,11 +139,21 @@ export function AppleStyleDock() {
           >
             <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
               <DockLabel>{item.title}</DockLabel>
-              <DockIcon>{item.icon}</DockIcon>
+              <DockIcon>
+                {item.title === 'GitHub' ? (
+                  <GithubIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+                ) : item.title === 'LinkedIn' ? (
+                  <LinkedinIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+                ) : item.title === 'X' ? (
+                  <TwitterXIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+                ) : (
+                  <EmailIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
+                )}
+              </DockIcon>
             </DockItem>
           </a>
         ))}
-        <div className='mx-1 h-8 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50' />
+        <div className='mx-0.5 h-6 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50 sm:mx-1 sm:h-8' />
         <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
           <DockLabel>Theme</DockLabel>
           <DockIcon>
@@ -129,9 +165,9 @@ export function AppleStyleDock() {
               className='flex h-full w-full cursor-pointer items-center justify-center text-neutral-600 dark:text-neutral-300'
             >
               {isDark ? (
-                <SunIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
+                <SunIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
               ) : (
-                <MoonIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
+                <MoonIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
               )}
             </button>
           </DockIcon>
