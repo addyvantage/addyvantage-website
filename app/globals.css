@@ -23,6 +23,12 @@ html {
   scroll-behavior: smooth;
   background-color: #ffffff;
   font-family: "Delicatus", sans-serif;
+  overflow-x: hidden;
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 html.light {
@@ -43,6 +49,7 @@ body {
   background-image: none;
   color: rgb(15 23 42);
   font-family: "Delicatus", sans-serif;
+  overflow-x: hidden;
 }
 
 html.dark body {
@@ -59,4 +66,55 @@ html.light body {
 
 * {
   box-sizing: border-box;
+}
+
+.squiggle {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="6" viewBox="0 0 24 6"><path d="M0 3 C2 3 2 1 4 1 S6 5 8 5 S10 1 12 1 S14 5 16 5 S18 1 20 1 S22 5 24 5" fill="none" stroke="%23475569" stroke-width="1.5" stroke-linecap="round"/></svg>');
+  background-position: 0 calc(100% - 1px);
+  background-repeat: repeat-x;
+  background-size: 12px 6px;
+  padding-bottom: 0.22em;
+  text-decoration: none;
+}
+
+html.dark .squiggle {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="6" viewBox="0 0 24 6"><path d="M0 3 C2 3 2 1 4 1 S6 5 8 5 S10 1 12 1 S14 5 16 5 S18 1 20 1 S22 5 24 5" fill="none" stroke="%23cbd5e1" stroke-width="1.5" stroke-linecap="round"/></svg>');
+}
+
+.pixel-capsule {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 0.02);
+  border: 3px solid transparent;
+  border-image-slice: 3 fill;
+  border-image-width: 3px;
+  border-image-repeat: stretch;
+  border-image-source: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="%2318181b" fill-rule="evenodd" d="M4 0H8V1H10V2H11V4H12V8H11V10H10V11H8V12H4V11H2V10H1V8H0V4H1V2H2V1H4V0ZM3 1H4V2H3V1ZM8 1H9V2H8V1ZM2 2H4V3H2V2ZM8 2H10V3H8V2ZM1 3H3V4H1V3ZM9 3H11V4H9V3ZM1 4H2V8H1V4ZM10 4H11V8H10V4ZM1 8H3V9H1V8ZM9 8H11V9H9V8ZM2 9H4V10H2V9ZM8 9H10V10H8V9ZM3 10H4V11H3V10ZM8 10H9V11H8V10ZM4 1H8V2H4V1ZM4 10H8V11H4V10Z"/></svg>');
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.pixel-capsule::before {
+  content: none;
+}
+
+.pixel-capsule:hover {
+  background: rgb(245 245 245 / 0.08);
+}
+
+.pixel-capsule:hover::before {
+  content: none;
+}
+
+html.dark .pixel-capsule {
+  background-color: transparent;
+  border-image-source: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" shape-rendering="crispEdges"><path fill="%23ffffff" fill-rule="evenodd" d="M4 0H8V1H10V2H11V4H12V8H11V10H10V11H8V12H4V11H2V10H1V8H0V4H1V2H2V1H4V0ZM3 1H4V2H3V1ZM8 1H9V2H8V1ZM2 2H4V3H2V2ZM8 2H10V3H8V2ZM1 3H3V4H1V3ZM9 3H11V4H9V3ZM1 4H2V8H1V4ZM10 4H11V8H10V4ZM1 8H3V9H1V8ZM9 8H11V9H9V8ZM2 9H4V10H2V9ZM8 9H10V10H8V9ZM3 10H4V11H3V10ZM8 10H9V11H8V10ZM4 1H8V2H4V1ZM4 10H8V11H4V10Z"/></svg>');
+}
+
+html.dark .pixel-capsule:hover {
+  background: rgb(255 255 255 / 0.02);
 }

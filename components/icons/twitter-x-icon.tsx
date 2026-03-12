@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,10 +13,11 @@ export interface TwitterXIconHandle {
 }
 
 interface TwitterXIconProps extends HTMLAttributes<HTMLDivElement> {
+  loop?: boolean;
   size?: number;
 }
 
-const PATH_VARIANTS: Variants = {
+const PATH_VARIANTS = (loop: boolean): Variants => ({
   normal: {
     opacity: 1,
     pathLength: 1,
@@ -34,14 +35,26 @@ const PATH_VARIANTS: Variants = {
       duration: 0.6,
       ease: "linear",
       opacity: { duration: 0.1 },
+      repeat: loop ? Number.POSITIVE_INFINITY : 0,
+      repeatDelay: loop ? 0.85 : 0,
     },
   },
-};
+});
 
 const TwitterXIcon = forwardRef<TwitterXIconHandle, TwitterXIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ onMouseEnter, onMouseLeave, className, loop = false, size = 28, ...props }, ref) => {
     const controls = useAnimation();
     const isControlledRef = useRef(false);
+    const variants = PATH_VARIANTS(loop);
+
+    useEffect(() => {
+      if (loop) {
+        controls.start("animate");
+        return;
+      }
+
+      controls.start("normal");
+    }, [controls, loop]);
 
     useImperativeHandle(ref, () => {
       isControlledRef.current = true;
@@ -54,24 +67,34 @@ const TwitterXIcon = forwardRef<TwitterXIconHandle, TwitterXIconProps>(
 
     const handleMouseEnter = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
+        if (loop) {
+          onMouseEnter?.(e);
+          return;
+        }
+
         if (isControlledRef.current) {
           onMouseEnter?.(e);
         } else {
           controls.start("animate");
         }
       },
-      [controls, onMouseEnter]
+      [controls, loop, onMouseEnter]
     );
 
     const handleMouseLeave = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
+        if (loop) {
+          onMouseLeave?.(e);
+          return;
+        }
+
         if (isControlledRef.current) {
           onMouseLeave?.(e);
         } else {
           controls.start("normal");
         }
       },
-      [controls, onMouseLeave]
+      [controls, loop, onMouseLeave]
     );
 
     return (
@@ -97,13 +120,13 @@ const TwitterXIcon = forwardRef<TwitterXIconHandle, TwitterXIconProps>(
             animate={controls}
             d="M4 4l11.733 16h4.267l-11.733 -16z"
             initial="normal"
-            variants={PATH_VARIANTS}
+            variants={variants}
           />
           <motion.path
             animate={controls}
             d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"
             initial="normal"
-            variants={PATH_VARIANTS}
+            variants={variants}
           />
         </svg>
       </div>

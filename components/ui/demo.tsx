@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Sun,
 } from 'lucide-react';
@@ -76,18 +77,20 @@ export function AppleStyleDock() {
   return (
     <div className='fixed bottom-8 left-1/2 z-50 max-w-full -translate-x-1/2'>
       <Dock magnification={55} distance={120}>
-        <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
-          <DockLabel>{data[0].title}</DockLabel>
-          <DockIcon>{data[0].icon}</DockIcon>
-        </DockItem>
-        <a href='#work'>
+        <Link href='/home'>
+          <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
+            <DockLabel>{data[0].title}</DockLabel>
+            <DockIcon>{data[0].icon}</DockIcon>
+          </DockItem>
+        </Link>
+        <Link href='/work'>
           <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
             <DockLabel>Work</DockLabel>
             <DockIcon>
               <WorkIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
             </DockIcon>
           </DockItem>
-        </a>
+        </Link>
         <a href='#blog'>
           <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
             <DockLabel>Blog</DockLabel>
