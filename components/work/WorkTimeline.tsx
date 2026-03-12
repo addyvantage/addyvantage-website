@@ -6,7 +6,7 @@ import { Observer } from "gsap/Observer";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { WorkTimelineCard } from "@/components/work/WorkTimelineCard";
-import { workTimelineData } from "@/components/work/work-data";
+import { workTimelineData, type WorkTimelineItem } from "@/components/work/work-data";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -27,8 +27,27 @@ function WorkTimeline() {
   const sectionActiveRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const updateIsMobile = () => {
+      setIsMobile(mediaQuery.matches);
+    };
+
+    updateIsMobile();
+    mediaQuery.addEventListener("change", updateIsMobile);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateIsMobile);
+    };
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
+    if (isMobile) return;
+
     const section = sectionRef.current;
     const stage = stageRef.current;
     const panels = panelRefs.current.filter(
@@ -316,7 +335,23 @@ function WorkTimeline() {
       triggerRef.current = null;
       ctx.revert();
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) {
+    return (
+      <section className="bg-white px-4 pb-28 pt-8 dark:bg-neutral-950 sm:px-5">
+        <div className="mx-auto max-w-xl space-y-6">
+          {workTimelineData.map((item, index) => (
+            <MobileWorkTimelineItem
+              key={item.id}
+              index={index}
+              item={item}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   const lineStartPercent = 18;
   const lineEndPercent = 82;
@@ -397,6 +432,96 @@ function WorkTimeline() {
         </div>
       </div>
     </section>
+  );
+}
+
+function MobileWorkTimelineItem({
+  item,
+  index,
+}: {
+  item: WorkTimelineItem;
+  index: number;
+}) {
+  const [isExpanded, setIsExpanded] = useState(index === 0);
+  const actionLinks = [
+    item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
+    item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
+  ].filter((link): link is { href: string; label: string } => link !== null);
+
+  return (
+    <article className="relative pl-12">
+      {index < workTimelineData.length - 1 ? (
+        <span className="absolute left-[13px] top-10 h-[calc(100%+1.5rem)] w-px bg-slate-300/80 dark:bg-white/12" />
+      ) : null}
+      <span className="absolute left-[7px] top-9 h-3.5 w-3.5 rounded-full border border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950" />
+      <button
+        type="button"
+        onClick={() => setIsExpanded((current) => !current)}
+        className="mb-3 inline-flex rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[0.95rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
+        aria-expanded={isExpanded}
+      >
+        {item.dateLabel}
+      </button>
+
+      <div className="rounded-[24px] border border-slate-900/18 bg-white/94 px-5 py-6 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-md dark:border-white/16 dark:bg-black/88 dark:shadow-none">
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <p className="text-[0.9rem] font-semibold uppercase tracking-[0.22em] text-neutral-600 dark:text-neutral-200">
+              {item.tagline}
+            </p>
+            <h2 className="text-[1.8rem] font-semibold leading-tight text-slate-900 dark:text-white">
+              {item.heading}
+            </h2>
+            <p className="text-[1.02rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
+              {item.description}
+            </p>
+          </div>
+
+          {isExpanded ? (
+            <div className="space-y-5 border-t border-slate-900/10 pt-4 dark:border-white/10">
+              <p className="text-[1rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                {item.details}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {item.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.74rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                  >
+                    <span className="max-w-full whitespace-normal break-words leading-tight">
+                      {skill}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              {actionLinks.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {actionLinks.map((link) => (
+                    <a
+                      key={link.label}
+                      className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.84rem] font-medium uppercase tracking-[0.16em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                      href={link.href}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => setIsExpanded((current) => !current)}
+            className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-1.5 text-[0.72rem] uppercase tracking-[0.2em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+          >
+            {isExpanded ? "Hide Details" : "View Details"}
+          </button>
+        </div>
+      </div>
+    </article>
   );
 }
 

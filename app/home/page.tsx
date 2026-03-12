@@ -85,17 +85,17 @@ export default function HomePage() {
         className="mx-auto flex w-full max-w-4xl items-start px-5 pb-4 pt-12 sm:px-6 sm:pt-14 md:min-h-[32vh] md:px-8 md:pb-8 md:pt-20 lg:px-10"
         id="home"
       >
-        <div className="mt-4 flex w-full flex-col items-start gap-6 sm:mt-6 sm:gap-7 md:mt-12 md:flex-row md:items-center md:gap-10 md:pl-28">
-          <div className="max-w-[19rem] sm:max-w-[24rem] md:max-w-xl">
-            <h1 className="flex items-start gap-2 font-sans text-[2.35rem] font-medium leading-[1.02] tracking-tight text-black dark:text-white sm:text-[2.65rem] md:gap-3 md:text-4xl lg:text-5xl">
-              <span className="max-w-[8ch] sm:max-w-none">Hey there, addy here</span>
+        <div className="mt-3 grid w-full grid-cols-[minmax(0,1fr)_88px] items-start gap-x-4 gap-y-3 sm:mt-5 sm:grid-cols-[minmax(0,1fr)_96px] sm:gap-x-5 md:mt-12 md:flex md:items-center md:gap-10 md:pl-28">
+          <div className="min-w-0 max-w-[14.5rem] sm:max-w-[18rem] md:max-w-xl">
+            <h1 className="flex items-start gap-1.5 font-sans text-[2.1rem] font-medium leading-[1.02] tracking-tight text-black dark:text-white sm:gap-2 sm:text-[2.4rem] md:gap-3 md:text-4xl lg:text-5xl">
+              <span className="max-w-[7.4ch] sm:max-w-[8ch] md:max-w-none">Hey there, addy here</span>
               <HandIcon
                 aria-hidden="true"
-                className="mt-1 shrink-0 scale-[0.72] text-black dark:text-white md:-translate-y-1 md:scale-100"
+                className="mt-1 shrink-0 scale-[0.62] text-black dark:text-white sm:scale-[0.68] md:-translate-y-1 md:scale-100"
                 size={48}
               />
             </h1>
-            <div className="mt-3 max-w-[18rem] text-[1.18rem] leading-[1.15] text-neutral-500 dark:text-neutral-400 sm:max-w-[22rem] sm:text-[1.3rem] md:mt-0 md:max-w-xl md:text-[1.75rem]">
+            <div className="mt-2.5 max-w-[14rem] text-[1.04rem] leading-[1.12] text-neutral-500 dark:text-neutral-400 sm:max-w-[18rem] sm:text-[1.16rem] md:mt-0 md:max-w-xl md:text-[1.75rem]">
               <div className="flex flex-wrap items-baseline gap-x-0 gap-y-1">
                 <span>currently&nbsp;</span>
                 <Typewriter
@@ -117,7 +117,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div className="relative mt-2 h-[88px] w-[88px] overflow-hidden rounded-full border border-neutral-200/80 bg-neutral-100 shadow-sm dark:border-neutral-700/80 dark:bg-neutral-900 sm:h-[96px] sm:w-[96px] md:mt-0 md:h-[112px] md:w-[112px]">
+          <div className="relative col-start-2 row-span-2 mt-1 h-[88px] w-[88px] justify-self-end overflow-hidden rounded-full border border-neutral-200/80 bg-neutral-100 shadow-sm dark:border-neutral-700/80 dark:bg-neutral-900 sm:h-[96px] sm:w-[96px] md:mt-0 md:h-[112px] md:w-[112px]">
             <Image
               alt="Addy profile image"
               className="object-cover"
