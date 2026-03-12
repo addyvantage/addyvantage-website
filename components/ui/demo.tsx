@@ -32,21 +32,21 @@ const data = [
     icon: (
       <GithubIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
     ),
-    href: '#',
+    href: 'https://github.com/addyvantage',
   },
   {
     title: 'LinkedIn',
     icon: (
       <LinkedinIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
     ),
-    href: '#',
+    href: 'https://www.linkedin.com/in/addyvantage/',
   },
   {
     title: 'X',
     icon: (
       <TwitterXIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
     ),
-    href: '#',
+    href: 'https://x.com/addyvantage',
   },
   {
     title: 'Resume',
@@ -60,7 +60,7 @@ const data = [
     icon: (
       <EmailIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
     ),
-    href: '#',
+    href: 'mailto:adityasingh0929@gmail.com',
   },
 ];
 
@@ -105,13 +105,17 @@ export function AppleStyleDock() {
         </DockItem>
         <div className='mx-1 h-8 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50' />
         {[data[1], data[2], data[3], data[5]].map((item, idx) => (
-          <DockItem
+          <a
             key={`${item.title}-${idx}`}
-            className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'
+            href={item.href}
+            rel='noopener noreferrer'
+            target='_blank'
           >
-            <DockLabel>{item.title}</DockLabel>
-            <DockIcon>{item.icon}</DockIcon>
-          </DockItem>
+            <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
+              <DockLabel>{item.title}</DockLabel>
+              <DockIcon>{item.icon}</DockIcon>
+            </DockItem>
+          </a>
         ))}
         <div className='mx-1 h-8 w-px self-center bg-neutral-300/40 dark:bg-neutral-700/50' />
         <DockItem className='aspect-square rounded-full bg-gray-200 dark:bg-neutral-800'>
