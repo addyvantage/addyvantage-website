@@ -276,7 +276,21 @@ export default function HomePage() {
                 key={tool}
                 className="pixel-capsule min-h-[30px] px-3 py-0 text-[1.04rem] font-medium text-black dark:text-white"
               >
-                {tool}
+                <span aria-hidden="true" className="pixel-capsule-frame">
+                  <span className="pixel-capsule-segment pixel-capsule-top" />
+                  <span className="pixel-capsule-segment pixel-capsule-bottom" />
+                  <span className="pixel-capsule-segment pixel-capsule-left" />
+                  <span className="pixel-capsule-segment pixel-capsule-right" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-top-left" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-top-right" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-bottom-left" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-bottom-right" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-left-top" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-right-top" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-left-bottom" />
+                  <span className="pixel-capsule-segment pixel-capsule-corner-right-bottom" />
+                </span>
+                <span className="pixel-capsule-label">{tool}</span>
               </span>
             ))}
           </div>

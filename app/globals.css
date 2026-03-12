@@ -95,43 +95,104 @@ html.dark .squiggle {
     transform 140ms ease;
 }
 
-.pixel-capsule::before {
-  content: "";
+.pixel-capsule-frame {
   position: absolute;
   inset: 0;
-  border: 2px solid var(--pixel-border-color);
-  clip-path: polygon(
-    8px 0,
-    calc(100% - 8px) 0,
-    calc(100% - 8px) 2px,
-    calc(100% - 4px) 2px,
-    calc(100% - 4px) 4px,
-    calc(100% - 2px) 4px,
-    calc(100% - 2px) 8px,
-    100% 8px,
-    100% calc(100% - 8px),
-    calc(100% - 2px) calc(100% - 8px),
-    calc(100% - 2px) calc(100% - 4px),
-    calc(100% - 4px) calc(100% - 4px),
-    calc(100% - 4px) calc(100% - 2px),
-    calc(100% - 8px) calc(100% - 2px),
-    calc(100% - 8px) 100%,
-    8px 100%,
-    8px calc(100% - 2px),
-    4px calc(100% - 2px),
-    4px calc(100% - 4px),
-    2px calc(100% - 4px),
-    2px calc(100% - 8px),
-    0 calc(100% - 8px),
-    0 8px,
-    2px 8px,
-    2px 4px,
-    4px 4px,
-    4px 2px,
-    8px 2px
-  );
-  box-sizing: border-box;
   pointer-events: none;
+}
+
+.pixel-capsule-segment {
+  position: absolute;
+  background: var(--pixel-border-color);
+}
+
+.pixel-capsule-top {
+  left: 8px;
+  right: 8px;
+  top: 0;
+  height: 2px;
+}
+
+.pixel-capsule-bottom {
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 2px;
+}
+
+.pixel-capsule-left {
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+}
+
+.pixel-capsule-right {
+  right: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+}
+
+.pixel-capsule-corner-top-left,
+.pixel-capsule-corner-top-right,
+.pixel-capsule-corner-bottom-left,
+.pixel-capsule-corner-bottom-right {
+  width: 6px;
+  height: 2px;
+}
+
+.pixel-capsule-corner-left-top,
+.pixel-capsule-corner-right-top,
+.pixel-capsule-corner-left-bottom,
+.pixel-capsule-corner-right-bottom {
+  width: 2px;
+  height: 6px;
+}
+
+.pixel-capsule-corner-top-left {
+  left: 4px;
+  top: 2px;
+}
+
+.pixel-capsule-corner-top-right {
+  right: 4px;
+  top: 2px;
+}
+
+.pixel-capsule-corner-bottom-left {
+  left: 4px;
+  bottom: 2px;
+}
+
+.pixel-capsule-corner-bottom-right {
+  right: 4px;
+  bottom: 2px;
+}
+
+.pixel-capsule-corner-left-top {
+  left: 2px;
+  top: 4px;
+}
+
+.pixel-capsule-corner-right-top {
+  right: 2px;
+  top: 4px;
+}
+
+.pixel-capsule-corner-left-bottom {
+  left: 2px;
+  bottom: 4px;
+}
+
+.pixel-capsule-corner-right-bottom {
+  right: 2px;
+  bottom: 4px;
+}
+
+.pixel-capsule-label {
+  position: relative;
+  z-index: 1;
 }
 
 .pixel-capsule:hover {
