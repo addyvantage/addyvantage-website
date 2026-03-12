@@ -26,8 +26,10 @@ function WorkTimeline() {
   const observerEnabledRef = useRef(false);
   const sectionActiveRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [progressRatio, setProgressRatio] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -45,18 +47,54 @@ function WorkTimeline() {
     };
   }, []);
 
-  useIsomorphicLayoutEffect(() => {
-    if (isMobile) return;
+  useEffect(() => {
+    if (!isMobile) return;
+    setMobileExpandedId(null);
+  }, [activeIndex, isMobile]);
 
+  useIsomorphicLayoutEffect(() => {
     const section = sectionRef.current;
     const stage = stageRef.current;
+    gsap.registerPlugin(ScrollTrigger, Observer);
+
+    if (isMobile) {
+      if (!section || !stage) return;
+
+      const lastIndex = workTimelineData.length - 1;
+      const updateMobileProgress = (progress: number) => {
+        const nextRatio = lastIndex <= 0 ? 1 : progress;
+        const nextIndex =
+          lastIndex <= 0 ? 0 : Math.min(lastIndex, Math.round(progress * lastIndex));
+
+        setProgressRatio((current) => (current === nextRatio ? current : nextRatio));
+        setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+      };
+
+      const mobileTrigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        invalidateOnRefresh: true,
+        onRefresh: (self) => {
+          updateMobileProgress(self.progress);
+        },
+        onUpdate: (self) => {
+          updateMobileProgress(self.progress);
+        },
+      });
+
+      ScrollTrigger.refresh();
+
+      return () => {
+        mobileTrigger.kill();
+      };
+    }
+
     const panels = panelRefs.current.filter(
       (panel): panel is HTMLDivElement => panel !== null
     );
 
     if (!section || !stage || panels.length === 0) return;
-
-    gsap.registerPlugin(ScrollTrigger, Observer);
 
     const panelCount = panels.length;
     const lastIndex = panelCount - 1;
@@ -338,13 +376,45 @@ function WorkTimeline() {
   }, [isMobile]);
 
   if (isMobile) {
-    return <MobileWorkTimeline />;
+    const activeItem = workTimelineData[activeIndex] ?? workTimelineData[0];
+
+    return (
+      <section
+        ref={sectionRef}
+        className="relative overflow-x-hidden bg-white dark:bg-neutral-950"
+        style={{ height: `${Math.max(workTimelineData.length, 1) * 100}svh` }}
+      >
+        <div
+          ref={stageRef}
+          className="sticky top-0 h-[100svh] overflow-hidden bg-white dark:bg-neutral-950"
+        >
+          <div className="mx-auto flex h-full w-full max-w-xl items-center px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] sm:px-5">
+            <div className="grid w-full grid-cols-[minmax(0,1fr)_60px] items-center gap-x-4">
+              <MobilePinnedWorkCard
+                key={activeItem.id}
+                isExpanded={mobileExpandedId === activeItem.id}
+                item={activeItem}
+                onToggle={() => {
+                  setMobileExpandedId((current) =>
+                    current === activeItem.id ? null : activeItem.id
+                  );
+                }}
+              />
+              <MobilePinnedTimeline
+                activeIndex={activeIndex}
+                progressRatio={progressRatio}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   const lineStartPercent = 18;
   const lineEndPercent = 82;
   const lineHeightPercent = lineEndPercent - lineStartPercent;
-  const progressRatio =
+  const desktopProgressRatio =
     workTimelineData.length === 1
       ? 1
       : activeIndex / (workTimelineData.length - 1);
@@ -359,7 +429,7 @@ function WorkTimeline() {
           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-300/90 dark:bg-white/12" />
           <div
             className="absolute left-1/2 top-0 w-px -translate-x-1/2 origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.10)] transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.18)]"
-            style={{ height: `${progressRatio * 100}%` }}
+            style={{ height: `${desktopProgressRatio * 100}%` }}
           />
 
           {workTimelineData.map((item, index) => {
@@ -423,122 +493,7 @@ function WorkTimeline() {
   );
 }
 
-function MobileWorkTimeline() {
-  const sectionRefs = useRef<Array<HTMLElement | null>>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [progressRatio, setProgressRatio] = useState(0);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    let frame = 0;
-
-    const updateProgress = () => {
-      frame = 0;
-      const sections = sectionRefs.current.filter(
-        (section): section is HTMLElement => section !== null
-      );
-
-      if (sections.length === 0) return;
-
-      const viewportCenter = window.innerHeight * 0.46;
-      let nearestIndex = 0;
-      let nearestDistance = Number.POSITIVE_INFINITY;
-
-      sections.forEach((section, index) => {
-        const rect = section.getBoundingClientRect();
-        const sectionCenter = rect.top + rect.height / 2;
-        const distance = Math.abs(sectionCenter - viewportCenter);
-
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearestIndex = index;
-        }
-      });
-
-      setActiveIndex((current) => (current === nearestIndex ? current : nearestIndex));
-
-      if (sections.length === 1) {
-        setProgressRatio(1);
-        return;
-      }
-
-      const firstRect = sections[0].getBoundingClientRect();
-      const lastRect = sections[sections.length - 1].getBoundingClientRect();
-      const firstCenter = firstRect.top + firstRect.height / 2;
-      const lastCenter = lastRect.top + lastRect.height / 2;
-      const denominator = lastCenter - firstCenter;
-
-      if (Math.abs(denominator) < 1) {
-        setProgressRatio(0);
-        return;
-      }
-
-      const nextProgress = Math.max(
-        0,
-        Math.min(1, (viewportCenter - firstCenter) / denominator)
-      );
-
-      setProgressRatio(nextProgress);
-    };
-
-    const requestUpdate = () => {
-      if (frame !== 0) return;
-      frame = window.requestAnimationFrame(updateProgress);
-    };
-
-    updateProgress();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", requestUpdate);
-
-    return () => {
-      if (frame !== 0) {
-        window.cancelAnimationFrame(frame);
-      }
-      window.removeEventListener("scroll", requestUpdate);
-      window.removeEventListener("resize", requestUpdate);
-    };
-  }, []);
-
-  return (
-    <section className="relative bg-white px-4 pb-28 pt-6 dark:bg-neutral-950 sm:px-5">
-      <div className="mx-auto max-w-xl">
-        <div className="sticky top-[5.5rem] z-10 h-[calc(100svh-7rem)]">
-          <div className="grid h-full grid-cols-[minmax(0,1fr)_58px] items-start gap-x-4">
-            <MobileActiveWorkCard
-              isExpanded={expandedId === workTimelineData[activeIndex].id}
-              item={workTimelineData[activeIndex]}
-              onToggle={() => {
-                const currentId = workTimelineData[activeIndex].id;
-                setExpandedId((current) => (current === currentId ? null : currentId));
-              }}
-            />
-            <MobileStickyTimeline
-              activeIndex={activeIndex}
-              progressRatio={progressRatio}
-            />
-          </div>
-        </div>
-
-        <div className="-mt-[calc(100svh-7rem)]">
-          {workTimelineData.map((item, index) => (
-            <section
-              key={item.id}
-              ref={(node) => {
-                sectionRefs.current[index] = node;
-              }}
-              aria-hidden="true"
-              className="min-h-[84svh]"
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function MobileStickyTimeline({
+function MobilePinnedTimeline({
   activeIndex,
   progressRatio,
 }: {
@@ -546,18 +501,18 @@ function MobileStickyTimeline({
   progressRatio: number;
 }) {
   return (
-    <div className="relative h-[calc(100svh-9rem)]">
-      <div className="sticky top-0 h-full">
-        <div className="absolute right-[13px] top-9 h-[calc(100%-4.5rem)] w-px bg-slate-300/80 dark:bg-white/12" />
+    <div className="relative h-[calc(100svh-8.5rem)]">
+      <div className="relative h-full">
+        <div className="absolute right-[13px] top-10 h-[calc(100%-5rem)] w-px bg-slate-300/80 dark:bg-white/12" />
         <div
-          className="absolute right-[13px] top-9 w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] transition-[height] duration-300 ease-out dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
-          style={{ height: `calc((100% - 4.5rem) * ${progressRatio})` }}
+          className="absolute right-[13px] top-10 w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] transition-[height] duration-300 ease-out dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
+          style={{ height: `calc((100% - 5rem) * ${progressRatio})` }}
         />
         {workTimelineData.map((item, index) => {
           const dotTop =
             workTimelineData.length === 1
-              ? "2.25rem"
-              : `calc(2.25rem + ${(index / (workTimelineData.length - 1)).toFixed(4)} * (100% - 4.5rem))`;
+              ? "2.5rem"
+              : `calc(2.5rem + ${(index / (workTimelineData.length - 1)).toFixed(4)} * (100% - 5rem))`;
           const isActive = index === activeIndex;
           const isComplete = index < activeIndex;
 
@@ -587,7 +542,7 @@ function MobileStickyTimeline({
   );
 }
 
-function MobileActiveWorkCard({
+function MobilePinnedWorkCard({
   item,
   isExpanded,
   onToggle,
@@ -602,70 +557,80 @@ function MobileActiveWorkCard({
   ].filter((link): link is { href: string; label: string } => link !== null);
 
   return (
-    <div className="flex min-h-[calc(100svh-9rem)] items-center">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full text-left"
+    <div className="flex min-h-[calc(100svh-8.5rem)] items-center">
+      <article
+        className={`w-full cursor-pointer overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 text-left shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
+          isExpanded
+            ? "max-h-[calc(100svh-8.5rem)] overflow-y-auto overscroll-contain"
+            : "max-h-[18.75rem]"
+        }`}
         aria-expanded={isExpanded}
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("a")) return;
+          onToggle();
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          onToggle();
+        }}
+        role="button"
+        tabIndex={0}
       >
-        <div
-          className={`w-full overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
-            isExpanded ? "max-h-[calc(100svh-9rem)] overflow-y-auto" : "max-h-[20rem]"
-          }`}
-        >
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
-                {item.tagline}
-              </p>
-              <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
-                {item.heading}
-              </h2>
-              <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
-                {item.description}
-              </p>
-            </div>
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
+              {item.tagline}
+            </p>
+            <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
+              {item.heading}
+            </h2>
+            <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
+              {item.description}
+            </p>
+          </div>
 
-            {isExpanded ? (
-              <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
-                <div className="space-y-5">
-                  <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
-                    {item.details}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
-                      >
-                        <span className="max-w-full whitespace-normal break-words leading-tight">
-                          {skill}
-                        </span>
+          {isExpanded ? (
+            <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
+              <div className="space-y-5">
+                <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                  {item.details}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {item.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                    >
+                      <span className="max-w-full whitespace-normal break-words leading-tight">
+                        {skill}
                       </span>
+                    </span>
+                  ))}
+                </div>
+                {actionLinks.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {actionLinks.map((link) => (
+                      <a
+                        key={link.label}
+                        className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                        href={link.href}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                        }}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {link.label}
+                      </a>
                     ))}
                   </div>
-                  {actionLinks.length > 0 ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {actionLinks.map((link) => (
-                        <a
-                          key={link.label}
-                          className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
-                          href={link.href}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {link.label}
-                        </a>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
+                ) : null}
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
-      </button>
+      </article>
     </div>
   );
 }
