@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { Observer } from "gsap/Observer";
@@ -424,220 +425,224 @@ function WorkTimeline() {
 }
 
 function MobileWorkTimeline() {
-  const wrapperRef = useRef<HTMLElement | null>(null);
+  const dimensions = useMobileDimensions();
+  const sectionRefs = useRef<Array<HTMLElement | null>>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [progressRatio, setProgressRatio] = useState(0);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [viewportHeight, setViewportHeight] = useState(0);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const updateViewportHeight = () => {
-      setViewportHeight(window.innerHeight);
-    };
-
-    updateViewportHeight();
-    window.addEventListener("resize", updateViewportHeight);
-    window.addEventListener("orientationchange", updateViewportHeight);
-    window.visualViewport?.addEventListener("resize", updateViewportHeight);
-
-    return () => {
-      window.removeEventListener("resize", updateViewportHeight);
-      window.removeEventListener("orientationchange", updateViewportHeight);
-      window.visualViewport?.removeEventListener("resize", updateViewportHeight);
-    };
-  }, []);
 
   useEffect(() => {
     setExpandedId(null);
   }, [activeIndex]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const timelineTop = dimensions.width < 480 ? 124 : 136;
+  const timelineBottom = dimensions.width < 480 ? 156 : 168;
+  const timelineRight = dimensions.width < 480 ? 24 : 30;
+  const timelineHeight = Math.max(dimensions.height - timelineTop - timelineBottom, 280);
+  const progressHeight =
+    workTimelineData.length === 1
+      ? timelineHeight
+      : (timelineHeight * activeIndex) / (workTimelineData.length - 1);
 
-    let frame = 0;
-    const lastIndex = workTimelineData.length - 1;
+  const scrollToSection = (index: number) => {
+    const section = sectionRefs.current[index];
+    if (!section || typeof window === "undefined") return;
 
-    const updateProgress = () => {
-      frame = 0;
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-
-      const currentViewportHeight = window.innerHeight;
-      const maxScrollableDistance = Math.max(
-        wrapper.offsetHeight - currentViewportHeight,
-        1
-      );
-      const currentScroll = Math.max(
-        0,
-        Math.min(maxScrollableDistance, -wrapper.getBoundingClientRect().top)
-      );
-      const nextProgress = lastIndex <= 0 ? 1 : currentScroll / maxScrollableDistance;
-      const nextIndex =
-        lastIndex <= 0 ? 0 : Math.min(lastIndex, Math.round(nextProgress * lastIndex));
-
-      setProgressRatio((current) => (current === nextProgress ? current : nextProgress));
-      setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
-    };
-
-    const requestUpdate = () => {
-      if (frame !== 0) return;
-      frame = window.requestAnimationFrame(updateProgress);
-    };
-
-    updateProgress();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", requestUpdate);
-    window.addEventListener("orientationchange", requestUpdate);
-    window.visualViewport?.addEventListener("resize", requestUpdate);
-
-    return () => {
-      if (frame !== 0) {
-        window.cancelAnimationFrame(frame);
-      }
-      window.removeEventListener("scroll", requestUpdate);
-      window.removeEventListener("resize", requestUpdate);
-      window.removeEventListener("orientationchange", requestUpdate);
-      window.visualViewport?.removeEventListener("resize", requestUpdate);
-    };
-  }, [viewportHeight]);
-
-  const activeItem = workTimelineData[activeIndex] ?? workTimelineData[0];
-  const safeViewportHeight = viewportHeight > 0 ? viewportHeight : 0;
-  const stepHeight = safeViewportHeight > 0 ? Math.round(safeViewportHeight * 0.92) : 0;
-  const wrapperHeight =
-    safeViewportHeight > 0
-      ? safeViewportHeight + stepHeight * Math.max(workTimelineData.length - 1, 0)
-      : null;
-  const stageHeightStyle = safeViewportHeight > 0 ? `${safeViewportHeight}px` : "100svh";
-  const stageContentHeight =
-    safeViewportHeight > 0 ? Math.max(safeViewportHeight - 136, 320) : undefined;
-  const expandedCardMaxHeight =
-    safeViewportHeight > 0 ? Math.max(safeViewportHeight - 176, 280) : undefined;
+    window.scrollTo({
+      top: section.offsetTop,
+      behavior: "smooth",
+    });
+  };
 
   return (
-    <section
-      ref={wrapperRef}
-      className="relative overflow-visible bg-white dark:bg-neutral-950"
-      style={
-        wrapperHeight !== null
-          ? { height: `${wrapperHeight}px` }
-          : { height: `${Math.max(workTimelineData.length, 1) * 100}svh` }
-      }
-    >
-      <div
-        className="sticky top-0 bg-white dark:bg-neutral-950"
-        style={{ height: stageHeightStyle }}
-      >
-        <div className="mx-auto flex h-full w-full max-w-xl items-center px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(1.5rem+env(safe-area-inset-top))] sm:px-5">
-          <div className="grid w-full grid-cols-[minmax(0,1fr)_60px] items-center gap-x-4">
-            <MobilePinnedWorkCard
-              key={activeItem.id}
-              isExpanded={expandedId === activeItem.id}
-              item={activeItem}
-              minCardHeight={stageContentHeight}
-              maxExpandedHeight={expandedCardMaxHeight}
-              onToggle={() => {
-                setExpandedId((current) =>
-                  current === activeItem.id ? null : activeItem.id
-                );
-              }}
+    <section className="relative overflow-x-hidden bg-white dark:bg-neutral-950">
+      <div className="pointer-events-none fixed inset-y-0 right-0 z-20 w-[96px]">
+        <div
+          className="absolute w-px bg-slate-300/90 dark:bg-white/12"
+          style={{
+            right: `${timelineRight}px`,
+            top: `${timelineTop}px`,
+            height: `${timelineHeight}px`,
+          }}
+        />
+        <motion.div
+          className="absolute w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
+          animate={{ height: `${progressHeight}px` }}
+          style={{
+            right: `${timelineRight}px`,
+            top: `${timelineTop}px`,
+          }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+        />
+
+        {workTimelineData.map((item, index) => {
+          const isComplete = activeIndex >= index;
+          const isCurrent = activeIndex === index;
+          const dotTop =
+            workTimelineData.length === 1
+              ? timelineTop
+              : timelineTop +
+                (timelineHeight * index) / (workTimelineData.length - 1);
+
+          return (
+            <MobileTimelineDot
+              key={item.id}
+              index={index}
+              isComplete={isComplete}
+              isCurrent={isCurrent}
+              item={item}
+              onDotClick={scrollToSection}
+              top={dotTop}
+              right={timelineRight}
             />
-            <MobilePinnedTimeline
-              activeIndex={activeIndex}
-              timelineHeight={stageContentHeight}
-              progressRatio={progressRatio}
-            />
-          </div>
-        </div>
+          );
+        })}
+      </div>
+
+      <div className="relative z-10 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
+        {workTimelineData.map((item, index) => (
+          <MobileTimelineCardSection
+            key={item.id}
+            dimensions={dimensions}
+            index={index}
+            isActive={activeIndex === index}
+            isExpanded={expandedId === item.id}
+            item={item}
+            onActivate={setActiveIndex}
+            onToggle={() => {
+              setExpandedId((current) => (current === item.id ? null : item.id));
+            }}
+            sectionRef={(node) => {
+              sectionRefs.current[index] = node;
+            }}
+          />
+        ))}
       </div>
     </section>
   );
 }
 
-function MobilePinnedTimeline({
-  activeIndex,
-  timelineHeight,
-  progressRatio,
+function MobileTimelineDot({
+  item,
+  index,
+  isComplete,
+  isCurrent,
+  onDotClick,
+  top,
+  right,
 }: {
-  activeIndex: number;
-  timelineHeight?: number;
-  progressRatio: number;
+  item: WorkTimelineItem;
+  index: number;
+  isComplete: boolean;
+  isCurrent: boolean;
+  onDotClick: (index: number) => void;
+  top: number;
+  right: number;
 }) {
   return (
     <div
-      className="relative"
-      style={timelineHeight ? { height: `${timelineHeight}px` } : { height: "calc(100svh - 8.5rem)" }}
+      className="pointer-events-auto absolute"
+      style={{
+        right: `${right - 7}px`,
+        top: `${top}px`,
+      }}
     >
-      <div className="relative h-full">
-        <div className="absolute right-[13px] top-10 h-[calc(100%-5rem)] w-px bg-slate-300/80 dark:bg-white/12" />
-        <div
-          className="absolute right-[13px] top-10 w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] transition-[height] duration-300 ease-out dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
-          style={{ height: `calc((100% - 5rem) * ${progressRatio})` }}
-        />
-        {workTimelineData.map((item, index) => {
-          const dotTop =
-            workTimelineData.length === 1
-              ? "2.5rem"
-              : `calc(2.5rem + ${(index / (workTimelineData.length - 1)).toFixed(4)} * (100% - 5rem))`;
-          const isActive = index === activeIndex;
-          const isComplete = index < activeIndex;
-
-          return (
-            <div
-              key={item.id}
-              className="absolute right-0"
-              style={{ top: dotTop }}
-            >
-              {isActive ? (
-                <div className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none">
-                  {item.dateLabel}
-                </div>
-              ) : null}
-              <span
-                className={`absolute right-[7px] top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border transition-colors duration-300 ${
-                  isActive || isComplete
-                    ? "border-slate-900 bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.16)] dark:border-white dark:bg-white dark:shadow-[0_0_16px_rgba(255,255,255,0.22)]"
-                    : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950"
-                }`}
-              />
-            </div>
-          );
-        })}
-      </div>
+      {isCurrent ? (
+        <motion.button
+          type="button"
+          className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => onDotClick(index)}
+        >
+          {item.dateLabel}
+        </motion.button>
+      ) : null}
+      <motion.button
+        type="button"
+        className={`absolute right-0 top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border ${
+          isComplete
+            ? "border-slate-900 bg-slate-900 dark:border-white dark:bg-white"
+            : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950"
+        }`}
+        animate={{
+          boxShadow: isComplete
+            ? "0 0 14px rgba(255,255,255,0.18)"
+            : "0 0 0 rgba(255,255,255,0)",
+          scale: isCurrent ? 1.22 : isComplete ? 1.04 : 1,
+        }}
+        onClick={() => onDotClick(index)}
+        transition={{ duration: 0.24, ease: "easeOut" }}
+      />
     </div>
   );
 }
 
-function MobilePinnedWorkCard({
-  item,
+function MobileTimelineCardSection({
+  dimensions,
+  index,
+  isActive,
   isExpanded,
-  minCardHeight,
-  maxExpandedHeight,
+  item,
+  onActivate,
   onToggle,
+  sectionRef,
 }: {
-  item: WorkTimelineItem;
+  dimensions: { width: number; height: number; isMobile: boolean };
+  index: number;
+  isActive: boolean;
   isExpanded: boolean;
-  minCardHeight?: number;
-  maxExpandedHeight?: number;
+  item: WorkTimelineItem;
+  onActivate: (index: number) => void;
   onToggle: () => void;
+  sectionRef: (node: HTMLElement | null) => void;
 }) {
+  const localRef = useRef<HTMLElement | null>(null);
+  const inView = useInView(localRef, { amount: 0.58 });
   const actionLinks = [
     item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
     item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
   ].filter((link): link is { href: string; label: string } => link !== null);
+  const sectionMinHeight = Math.max(dimensions.height - 20, 640);
+  const cardMaxWidth =
+    dimensions.width < 480
+      ? Math.max(dimensions.width - 108, 248)
+      : Math.max(dimensions.width - 124, 292);
+  const expandedCardMaxHeight = Math.max(dimensions.height - 220, 280);
+
+  useEffect(() => {
+    if (inView) {
+      onActivate(index);
+    }
+  }, [inView, index, onActivate]);
 
   return (
-    <div
-      className="flex items-center"
-      style={minCardHeight ? { minHeight: `${minCardHeight}px` } : { minHeight: "calc(100svh - 8.5rem)" }}
+    <motion.section
+      ref={(node) => {
+        localRef.current = node;
+        sectionRef(node);
+      }}
+      animate={{
+        opacity: isActive ? 1 : 0.74,
+        scale: isActive ? 1 : 0.975,
+        y: isActive ? 0 : 18,
+      }}
+      className="relative flex items-center pl-5 pr-[5.5rem] sm:pl-6 sm:pr-[6.25rem]"
+      initial={{ opacity: 0, y: 32 }}
+      style={{ minHeight: `${sectionMinHeight}px` }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
     >
-      <article
+      <motion.article
         className={`w-full cursor-pointer overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 text-left shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
           isExpanded ? "overflow-y-auto overscroll-contain" : ""
         }`}
         aria-expanded={isExpanded}
+        animate={{
+          boxShadow: isExpanded
+            ? "0 0 34px rgba(255,255,255,0.10)"
+            : isActive
+              ? "0 20px 52px rgba(15,23,42,0.16)"
+              : "0 14px 36px rgba(15,23,42,0.1)",
+        }}
         onClick={(event) => {
           if ((event.target as HTMLElement).closest("a")) return;
           onToggle();
@@ -648,8 +653,12 @@ function MobilePinnedWorkCard({
           onToggle();
         }}
         role="button"
-        style={isExpanded && maxExpandedHeight ? { maxHeight: `${maxExpandedHeight}px` } : undefined}
+        style={{
+          maxHeight: isExpanded ? `${expandedCardMaxHeight}px` : undefined,
+          maxWidth: `${cardMaxWidth}px`,
+        }}
         tabIndex={0}
+        transition={{ duration: 0.28, ease: "easeOut" }}
       >
         <div className="space-y-4">
           <div className="space-y-3">
@@ -664,49 +673,105 @@ function MobilePinnedWorkCard({
             </p>
           </div>
 
-          {isExpanded ? (
-            <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
-              <div className="space-y-5">
-                <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
-                  {item.details}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {item.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
-                    >
-                      <span className="max-w-full whitespace-normal break-words leading-tight">
-                        {skill}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-                {actionLinks.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {actionLinks.map((link) => (
-                      <a
-                        key={link.label}
-                        className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
-                        href={link.href}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                        }}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        {link.label}
-                      </a>
-                    ))}
+          <AnimatePresence initial={false}>
+            {isExpanded ? (
+              <motion.div
+                animate={{ height: "auto", opacity: 1, marginTop: 0 }}
+                className="overflow-hidden"
+                exit={{ height: 0, opacity: 0, marginTop: -4 }}
+                initial={{ height: 0, opacity: 0, marginTop: -4 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+              >
+                <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
+                  <div className="space-y-5">
+                    <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      {item.details}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                        >
+                          <span className="max-w-full whitespace-normal break-words leading-tight">
+                            {skill}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                    {actionLinks.length > 0 ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {actionLinks.map((link) => (
+                          <a
+                            key={link.label}
+                            className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                            href={link.href}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                            }}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {link.label}
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
-      </article>
-    </div>
+      </motion.article>
+    </motion.section>
   );
+}
+
+function useMobileDimensions() {
+  const [dimensions, setDimensions] = useState({
+    width: 390,
+    height: 844,
+    isMobile: true,
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateDimensions = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const isMobile = width < 768;
+
+      setDimensions((current) => {
+        if (
+          current.width === width &&
+          current.height === height &&
+          current.isMobile === isMobile
+        ) {
+          return current;
+        }
+
+        return { width, height, isMobile };
+      });
+    };
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const debouncedResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateDimensions, 100);
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", debouncedResize, { passive: true });
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", debouncedResize);
+    };
+  }, []);
+
+  return dimensions;
 }
 
 export { WorkTimeline };
