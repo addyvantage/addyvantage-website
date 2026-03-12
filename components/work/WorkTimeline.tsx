@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { Observer } from "gsap/Observer";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -427,11 +427,6 @@ function MobileWorkTimeline() {
   const sectionRefs = useRef<Array<HTMLElement | null>>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [progressRatio, setProgressRatio] = useState(0);
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    setIsExpanded(false);
-  }, [activeIndex]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -508,21 +503,17 @@ function MobileWorkTimeline() {
   return (
     <section className="relative bg-white px-4 pb-28 pt-6 dark:bg-neutral-950 sm:px-5">
       <div className="mx-auto max-w-xl">
-        <div className="sticky top-[5.5rem] z-10 grid grid-cols-[minmax(0,1fr)_58px] items-start gap-x-4">
-          <MobileActiveWorkCard
-            isExpanded={isExpanded}
-            item={workTimelineData[activeIndex]}
-            onToggle={() => {
-              setIsExpanded((current) => !current);
-            }}
-          />
-          <MobileStickyTimeline
-            activeIndex={activeIndex}
-            progressRatio={progressRatio}
-          />
+        <div className="sticky top-[5.5rem] z-10 h-[calc(100svh-7rem)]">
+          <div className="grid h-full grid-cols-[minmax(0,1fr)_58px] items-start gap-x-4">
+            <MobileActiveWorkCard item={workTimelineData[activeIndex]} />
+            <MobileStickyTimeline
+              activeIndex={activeIndex}
+              progressRatio={progressRatio}
+            />
+          </div>
         </div>
 
-        <div className="pointer-events-none -mt-[calc(100svh-11rem)]">
+        <div className="-mt-[calc(100svh-7rem)]">
           {workTimelineData.map((item, index) => (
             <section
               key={item.id}
@@ -590,89 +581,66 @@ function MobileStickyTimeline({
 
 function MobileActiveWorkCard({
   item,
-  isExpanded,
-  onToggle,
 }: {
   item: WorkTimelineItem;
-  isExpanded: boolean;
-  onToggle: () => void;
 }) {
   const actionLinks = [
     item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
     item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
   ].filter((link): link is { href: string; label: string } => link !== null);
-  const detailsState = useMemo(
-    () => (isExpanded ? "max-h-[34rem] opacity-100 pt-4" : "max-h-0 opacity-0 pt-0"),
-    [isExpanded]
-  );
 
   return (
     <div className="flex min-h-[calc(100svh-9rem)] items-center">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full text-left"
-        aria-expanded={isExpanded}
-      >
-        <div className="max-h-[calc(100svh-10rem)] w-full overflow-y-auto rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6">
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
-                {item.tagline}
-              </p>
-              <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
-                {item.heading}
-              </h2>
-              <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
-                {item.description}
-              </p>
-            </div>
+      <div className="max-h-[calc(100svh-9rem)] w-full overflow-y-auto rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6">
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
+              {item.tagline}
+            </p>
+            <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
+              {item.heading}
+            </h2>
+            <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
+              {item.description}
+            </p>
+          </div>
 
-            <div
-              className={`overflow-hidden border-t border-slate-900/10 transition-all duration-300 dark:border-white/10 ${detailsState}`}
-            >
-              <div className="space-y-5">
-                <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
-                  {item.details}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {item.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
-                    >
-                      <span className="max-w-full whitespace-normal break-words leading-tight">
-                        {skill}
-                      </span>
+          <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
+            <div className="space-y-5">
+              <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                {item.details}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {item.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                  >
+                    <span className="max-w-full whitespace-normal break-words leading-tight">
+                      {skill}
                     </span>
+                  </span>
+                ))}
+              </div>
+              {actionLinks.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {actionLinks.map((link) => (
+                    <a
+                      key={link.label}
+                      className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                      href={link.href}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      {link.label}
+                    </a>
                   ))}
                 </div>
-                {actionLinks.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {actionLinks.map((link) => (
-                      <a
-                        key={link.label}
-                        className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
-                        href={link.href}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        {link.label}
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="pt-1">
-              <span className="inline-flex rounded-full border border-slate-900/12 px-3 py-1.5 text-[0.72rem] uppercase tracking-[0.2em] text-slate-700 dark:border-white/12 dark:text-neutral-200">
-                {isExpanded ? "Tap To Collapse" : "Tap To Expand"}
-              </span>
+              ) : null}
             </div>
           </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 }
