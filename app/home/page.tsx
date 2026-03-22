@@ -42,7 +42,7 @@ const education = [
   {
     institution: "KIIT (Kalinga Institute of Industrial Technology)",
     program: "B.Tech Computer Science & Systems Engineering",
-    years: "2022 - present",
+    years: "2022 - present (2026)",
     logo: "/images/kiit-logo.png",
     logoAlt: "KIIT logo",
     logoClassName: "bg-white",
