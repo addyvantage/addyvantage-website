@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { HomeDock } from "@/components/AppBar";
+import { SquarePenIcon } from "@/components/icons/square-pen-icon";
 import TwitterXIcon from "@/components/icons/twitter-x-icon";
 import { PixelFrame } from "@/components/ui/pixel-frame";
 import {
@@ -22,12 +23,19 @@ export default function BlogPage() {
 
       <section className="mx-auto w-full max-w-5xl px-5 pb-6 pt-16 sm:px-6 sm:pt-20 md:px-8 md:pt-24 lg:px-10">
         <div className="max-w-2xl md:pl-28">
-          <p className="text-[0.92rem] uppercase tracking-[0.24em] text-neutral-500 dark:text-neutral-500">
+          <p className="text-[1.02rem] uppercase tracking-[0.24em] text-neutral-700 dark:text-white sm:text-[1.08rem]">
             notebook
           </p>
-          <h1 className="mt-2 text-[2.2rem] font-medium tracking-tight text-black dark:text-white sm:text-[2.6rem] md:text-[3.2rem]">
-            Writing
-          </h1>
+          <div className="mt-2 flex items-center gap-3">
+            <h1 className="text-[2.2rem] font-medium tracking-tight text-black dark:text-white sm:text-[2.6rem] md:text-[3.2rem]">
+              Writing
+            </h1>
+            <SquarePenIcon
+              loop
+              className="inline-flex translate-y-[1px] text-neutral-900 dark:text-white"
+              size={26}
+            />
+          </div>
           <p className="mt-3 max-w-[34rem] text-[1.08rem] leading-relaxed text-neutral-600 dark:text-neutral-400 sm:text-[1.14rem] md:text-[1.24rem]">
             Notes on building, AI systems, experiments, and ideas I keep
             returning to.
