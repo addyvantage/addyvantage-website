@@ -5,7 +5,8 @@ import TwitterXIcon from "@/components/icons/twitter-x-icon";
 import { ProjectLinkTitle } from "@/components/project-link-title";
 import { AppleStyleDock } from "@/components/ui/demo";
 import { Typewriter } from "@/components/ui/typewriter";
-import profileImage from "../../X-pfp.jpg";
+import profileImageDark from "../../X-pfp.jpg";
+import profileImageLight from "../../X-pfp-light.png";
 
 const builtThings = [
   {
@@ -129,11 +130,19 @@ export default function HomePage() {
           <div className="relative col-start-2 row-span-2 mt-1 h-[88px] w-[88px] justify-self-end overflow-hidden rounded-full border border-neutral-200/80 bg-neutral-100 shadow-sm dark:border-neutral-700/80 dark:bg-neutral-900 sm:h-[96px] sm:w-[96px] md:mt-0 md:h-[112px] md:w-[112px]">
             <Image
               alt="Addy profile image"
-              className="object-cover"
+              className="object-cover dark:hidden"
               fill
               priority
               sizes="(max-width: 640px) 88px, (max-width: 768px) 96px, 112px"
-              src={profileImage}
+              src={profileImageLight}
+            />
+            <Image
+              alt="Addy profile image"
+              className="hidden object-cover dark:block"
+              fill
+              priority
+              sizes="(max-width: 640px) 88px, (max-width: 768px) 96px, 112px"
+              src={profileImageDark}
             />
           </div>
         </div>
