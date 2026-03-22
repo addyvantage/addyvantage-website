@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { HomeDock } from "@/components/AppBar";
+import TwitterXIcon from "@/components/icons/twitter-x-icon";
 import { PixelFrame } from "@/components/ui/pixel-frame";
 import {
   blogTopics,
@@ -168,17 +169,18 @@ export default function BlogPage() {
       >
         <div className="flex flex-col items-center justify-center gap-4 text-center md:pl-0">
           <span className="h-1 w-14 rounded-full bg-black/75 dark:bg-white/80" />
-          <p className="text-[1.28rem] leading-tight text-neutral-700 dark:text-neutral-300 sm:text-[1.4rem] md:text-[1.58rem]">
-            Want to discuss any of these ideas? Say hi on{" "}
+          <div className="flex items-center justify-center gap-2 text-[1.28rem] leading-tight text-neutral-700 dark:text-neutral-300 sm:text-[1.4rem] md:text-[1.58rem]">
+            <span>Want to discuss any of these ideas? Say hi on</span>
             <Link
-              className="text-black underline decoration-black/35 underline-offset-[0.22em] transition-colors hover:text-neutral-600 dark:text-white dark:decoration-white/35 dark:hover:text-neutral-200"
+              aria-label="Say hi on X"
+              className="inline-flex translate-y-[1px] items-center text-neutral-950 transition-colors hover:text-neutral-600 dark:text-white dark:hover:text-neutral-300"
               href={xUrl}
               rel="noopener noreferrer"
               target="_blank"
             >
-              X
+              <TwitterXIcon loop size={28} />
             </Link>
-          </p>
+          </div>
         </div>
       </section>
     </main>

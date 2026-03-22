@@ -49,7 +49,7 @@ const education = [
     imageClassName: "translate-y-1.5 h-[96%] w-[96%] object-contain",
   },
   {
-    institution: "Modern School, Barakhamba Road",
+    institution: "Modern School, Barakhamba Road, New Delhi",
     program: "school education",
     years: "graduated 2022",
     logo: "/images/msbk-logo.jpg",
