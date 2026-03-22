@@ -12,6 +12,21 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "designing-tuku-from-intent-to-execution",
+    title: "Designing Tuku: from intent to execution",
+    summary:
+      "Why coding agents need an execution layer that can interpret intent, preserve continuity, and keep humans in control.",
+    date: "March 2026",
+    readTime: "6 min read",
+    tags: ["Systems", "AI Systems", "Product Thinking"],
+    content: [
+      "Tuku starts from a simple product problem: human intent usually arrives incomplete, messy, and mixed with assumptions that agents cannot safely execute on their own.",
+      "I wanted an execution layer that could translate that intent into work that is structured, resumable, and inspectable without stripping the human out of the loop.",
+      "That means continuity matters as much as raw capability. Context has to survive handoffs, checkpoints need to be explicit, and the system has to preserve enough state for both agents and humans to re-enter cleanly.",
+      "The real goal is not to make agents feel autonomous. It is to make them reliable under supervision, easier to steer, and better at carrying work forward without losing the thread.",
+    ],
+  },
+  {
     slug: "designing-a-recovery-first-coding-platform",
     title: "Designing a Recovery-First Coding Platform",
     summary:

@@ -9,6 +9,15 @@ import profileImage from "../../X-pfp.jpg";
 
 const builtThings = [
   {
+    title: "tuku",
+    description: "execution layer for coding agents",
+    points: [
+      "turns messy human intent into clean execution-ready work",
+      "keeps context, checkpoints, and handoffs across agent workflows",
+      "built to make coding agents more reliable, steerable, and resumable",
+    ],
+  },
+  {
     title: "mcp zero",
     description: "visual playground for model context protocol",
     points: [
@@ -100,7 +109,7 @@ export default function HomePage() {
                 <span>currently&nbsp;</span>
                 <Typewriter
                   text={[
-                    "building MCPZero",
+                    "building Tuku",
                     "thinking about agentic AI",
                     "exploring developer tooling",
                     "optimizing leverage",
