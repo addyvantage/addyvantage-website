@@ -33,7 +33,7 @@ export default function BlogPage() {
             <SquarePenIcon
               loop
               className="inline-flex translate-y-[1px] text-neutral-900 dark:text-white"
-              size={26}
+              size={48}
             />
           </div>
           <p className="mt-3 max-w-[34rem] text-[1.08rem] leading-relaxed text-neutral-600 dark:text-neutral-400 sm:text-[1.14rem] md:text-[1.24rem]">
