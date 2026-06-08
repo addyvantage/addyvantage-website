@@ -68,16 +68,32 @@ main#home :is(.bg-black, .bg-gray-200, .dark\:bg-white, .dark\:bg-neutral-800) {
       transparent 72%
     );
   clip-path: circle(0 at var(--theme-bubble-x, 50%) var(--theme-bubble-y, 50%));
-  opacity: 0.78;
-  transition:
-    clip-path 720ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 260ms ease 520ms;
+  opacity: 0;
+  transition: clip-path 720ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: clip-path, opacity;
 }
 
 .theme-bubble-transition.is-expanding {
   clip-path: circle(var(--theme-bubble-radius, 150vmax) at var(--theme-bubble-x, 50%) var(--theme-bubble-y, 50%));
-  opacity: 0;
+  animation: theme-bubble-wash 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes theme-bubble-wash {
+  0% {
+    opacity: 0;
+  }
+
+  16% {
+    opacity: 0.62;
+  }
+
+  66% {
+    opacity: 0.28;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -87,6 +103,7 @@ main#home :is(.bg-black, .bg-gray-200, .dark\:bg-white, .dark\:bg-neutral-800) {
   main#home :is(h1, h2, h3, p, span, a, button, svg),
   main#home :is(.bg-black, .bg-gray-200, .dark\:bg-white, .dark\:bg-neutral-800),
   .theme-bubble-transition {
+    animation: none;
     transition: none;
   }
 }
