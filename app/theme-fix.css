@@ -1,20 +1,43 @@
-body:has(main#home) {
-  background: #ffffff;
-  color: #0f172a;
-}
-
-html:not(.dark) main#home,
+html.light,
+html.light body,
+html.light body:has(main#home),
 html.light main#home {
-  background: #ffffff;
-  color: #0f172a;
+  color-scheme: only light !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
 }
 
-html.dark body:has(main#home) {
-  background: #000000;
-  color: #f8fafc;
+html.light main#home :is(h1, h2, h3, p, span, a, button, svg) {
+  color: #0f172a !important;
 }
 
+html.light main#home :is(.text-neutral-500, .text-neutral-600, .text-neutral-700) {
+  color: #525252 !important;
+}
+
+html.light main#home .bg-black,
+html.light main#home .dark\:bg-white {
+  background-color: #0f172a !important;
+}
+
+html.light main#home .bg-gray-200,
+html.light main#home .dark\:bg-neutral-800 {
+  background-color: #e5e7eb !important;
+}
+
+html.light main#home .dark\:hidden {
+  display: block !important;
+}
+
+html.light main#home .dark\:block {
+  display: none !important;
+}
+
+html.dark,
+html.dark body,
+html.dark body:has(main#home),
 html.dark main#home {
-  background: #000000;
-  color: #ffffff;
+  color-scheme: dark !important;
+  background: #000000 !important;
+  color: #ffffff !important;
 }
