@@ -1,0 +1,20 @@
+body:has(main#home) {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+html:not(.dark) main#home,
+html.light main#home {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+html.dark body:has(main#home) {
+  background: #000000;
+  color: #f8fafc;
+}
+
+html.dark main#home {
+  background: #000000;
+  color: #ffffff;
+}
