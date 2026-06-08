@@ -16,16 +16,16 @@ import TwitterXIcon from '@/components/icons/twitter-x-icon';
 import { WorkIcon } from '@/components/icons/work-icon';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
 
-const THEME_TRANSITION_MS = 720;
-const THEME_SWAP_DELAY_MS = 140;
+const THEME_TRANSITION_MS = 420;
+const THEME_SWAP_DELAY_MS = 30;
 const THEME_BUBBLE_COLORS = {
   light: {
-    core: 'rgba(255, 255, 255, 0.38)',
-    fill: 'rgba(255, 255, 255, 0.22)',
+    core: 'rgba(255, 255, 255, 0.5)',
+    fill: 'rgba(255, 255, 255, 0.16)',
   },
   dark: {
-    core: 'rgba(0, 0, 0, 0.34)',
-    fill: 'rgba(0, 0, 0, 0.2)',
+    core: 'rgba(15, 23, 42, 0.4)',
+    fill: 'rgba(15, 23, 42, 0.14)',
   },
 } as const;
 
@@ -135,12 +135,6 @@ export function AppleStyleDock() {
     const rect = event.currentTarget.getBoundingClientRect();
     const originX = rect.left + rect.width / 2;
     const originY = rect.top + rect.height / 2;
-    const radius = Math.ceil(
-      Math.hypot(
-        Math.max(originX, window.innerWidth - originX),
-        Math.max(originY, window.innerHeight - originY)
-      )
-    );
     const bubbleColor = THEME_BUBBLE_COLORS[nextTheme];
 
     const bubble = document.createElement('div');
@@ -149,7 +143,6 @@ export function AppleStyleDock() {
     bubble.style.setProperty('--theme-bubble-bg', bubbleColor.fill);
     bubble.style.setProperty('--theme-bubble-x', `${originX}px`);
     bubble.style.setProperty('--theme-bubble-y', `${originY}px`);
-    bubble.style.setProperty('--theme-bubble-radius', `${radius}px`);
     document.body.appendChild(bubble);
 
     setIsThemeAnimating(true);
@@ -159,7 +152,7 @@ export function AppleStyleDock() {
     });
 
     const swapDelay = prefersReducedMotion ? 0 : THEME_SWAP_DELAY_MS;
-    const cleanupDelay = prefersReducedMotion ? 0 : THEME_TRANSITION_MS + 120;
+    const cleanupDelay = prefersReducedMotion ? 0 : THEME_TRANSITION_MS + 80;
 
     themeSwapTimeoutRef.current = window.setTimeout(() => {
       applyTheme(nextTheme);
