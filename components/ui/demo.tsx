@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 
 import { BookTextIcon } from '@/components/icons/book-text-icon';
 import { EmailIcon } from '@/components/icons/email-icon';
@@ -15,6 +15,12 @@ import { SunIcon } from '@/components/icons/sun-icon';
 import TwitterXIcon from '@/components/icons/twitter-x-icon';
 import { WorkIcon } from '@/components/icons/work-icon';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
+
+const THEME_TRANSITION_MS = 680;
+const THEME_BUBBLE_COLORS = {
+  light: '#ffffff',
+  dark: '#000000',
+} as const;
 
 const data = [
   {
@@ -65,6 +71,9 @@ export function AppleStyleDock() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isThemeAnimating, setIsThemeAnimating] = useState(false);
+  const transitionTimeoutRef = useRef<number | null>(null);
+  const themeSwapTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -77,6 +86,13 @@ export function AppleStyleDock() {
 
     return () => {
       mediaQuery.removeEventListener('change', updateDockMode);
+      if (transitionTimeoutRef.current !== null) {
+        window.clearTimeout(transitionTimeoutRef.current);
+      }
+      if (themeSwapTimeoutRef.current !== null) {
+        window.clearTimeout(themeSwapTimeoutRef.current);
+      }
+      document.querySelectorAll('.theme-bubble-transition').forEach((bubble) => bubble.remove());
     };
   }, []);
 
@@ -88,21 +104,62 @@ export function AppleStyleDock() {
   const dockBaseItemSize = isMobile ? 26 : 36;
   const nextTheme = isDark ? 'light' : 'dark';
 
-  function handleThemeToggle() {
+  function applyTheme(theme: 'light' | 'dark') {
     const root = document.documentElement;
     const body = document.body;
-    const isNextLight = nextTheme === 'light';
+    const isNextLight = theme === 'light';
 
     root.classList.remove('dark', 'light');
-    root.classList.add(nextTheme);
-    root.dataset.theme = nextTheme;
-    root.style.colorScheme = nextTheme;
+    root.classList.add(theme);
+    root.dataset.theme = theme;
+    root.style.colorScheme = theme;
     root.style.backgroundColor = isNextLight ? '#ffffff' : '#000000';
     body.style.backgroundColor = isNextLight ? '#ffffff' : '#000000';
     body.style.color = isNextLight ? '#0f172a' : '#f8fafc';
-    localStorage.setItem('theme', nextTheme);
+    localStorage.setItem('theme', theme);
 
-    setTheme(nextTheme);
+    setTheme(theme);
+  }
+
+  function handleThemeToggle(event: MouseEvent<HTMLButtonElement>) {
+    if (isThemeAnimating) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+    const radius = Math.ceil(
+      Math.hypot(
+        Math.max(originX, window.innerWidth - originX),
+        Math.max(originY, window.innerHeight - originY)
+      )
+    );
+
+    const bubble = document.createElement('div');
+    bubble.className = 'theme-bubble-transition';
+    bubble.style.setProperty('--theme-bubble-bg', THEME_BUBBLE_COLORS[nextTheme]);
+    bubble.style.setProperty('--theme-bubble-x', `${originX}px`);
+    bubble.style.setProperty('--theme-bubble-y', `${originY}px`);
+    bubble.style.setProperty('--theme-bubble-radius', `${radius}px`);
+    document.body.appendChild(bubble);
+
+    setIsThemeAnimating(true);
+
+    window.requestAnimationFrame(() => {
+      bubble.classList.add('is-expanding');
+    });
+
+    const swapDelay = prefersReducedMotion ? 0 : THEME_TRANSITION_MS;
+    const cleanupDelay = prefersReducedMotion ? 0 : THEME_TRANSITION_MS + 140;
+
+    themeSwapTimeoutRef.current = window.setTimeout(() => {
+      applyTheme(nextTheme);
+    }, swapDelay);
+
+    transitionTimeoutRef.current = window.setTimeout(() => {
+      bubble.remove();
+      setIsThemeAnimating(false);
+    }, cleanupDelay);
   }
 
   return (
@@ -178,8 +235,9 @@ export function AppleStyleDock() {
               type='button'
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               aria-pressed={isDark}
+              disabled={isThemeAnimating}
               onClick={handleThemeToggle}
-              className='flex h-full w-full cursor-pointer items-center justify-center text-neutral-600 dark:text-neutral-300'
+              className='flex h-full w-full cursor-pointer items-center justify-center text-neutral-600 disabled:cursor-default disabled:opacity-80 dark:text-neutral-300'
             >
               {isDark ? (
                 <SunIcon className='text-neutral-600 dark:text-neutral-300' size={iconSize} />
