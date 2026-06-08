@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Aditya Singh",
-  description: "Personal portfolio homepage with a premium floating dock.",
+  description: "Aditya Singh's personal portfolio homepage with a premium floating dock.",
 };
 
 export default function RootLayout({
