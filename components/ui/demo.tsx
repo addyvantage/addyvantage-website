@@ -50,7 +50,7 @@ const data = [
     icon: (
       <ResumeIcon className='text-neutral-600 dark:text-neutral-300' size={22} />
     ),
-    href: 'https://drive.google.com/file/d/1gntt-i9O9XRa7keBki_H8-t2xWSnF1Hh/view?usp=drive_link',
+    href: 'https://drive.google.com/file/d/1gntt-i9O9XRa7keBki_H8-t2xWSnF1Hh/view?usp=sharing',
   },
   {
     title: 'Email',
