@@ -42,22 +42,50 @@ html.dark main#home {
   color: #ffffff !important;
 }
 
+html,
+body,
+main#home,
+main#home :is(h1, h2, h3, p, span, a, button, svg),
+main#home :is(.bg-black, .bg-gray-200, .dark\:bg-white, .dark\:bg-neutral-800) {
+  transition:
+    background-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    fill 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    stroke 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .theme-bubble-transition {
   position: fixed;
   inset: 0;
   z-index: 2147483647;
   pointer-events: none;
-  background: var(--theme-bubble-bg, #ffffff);
+  background:
+    radial-gradient(
+      circle at var(--theme-bubble-x, 50%) var(--theme-bubble-y, 50%),
+      var(--theme-bubble-core, rgba(255, 255, 255, 0.34)) 0,
+      var(--theme-bubble-bg, rgba(255, 255, 255, 0.18)) 48%,
+      transparent 72%
+    );
   clip-path: circle(0 at var(--theme-bubble-x, 50%) var(--theme-bubble-y, 50%));
-  transition: clip-path 680ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: clip-path;
+  opacity: 0.78;
+  transition:
+    clip-path 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 260ms ease 520ms;
+  will-change: clip-path, opacity;
 }
 
 .theme-bubble-transition.is-expanding {
   clip-path: circle(var(--theme-bubble-radius, 150vmax) at var(--theme-bubble-x, 50%) var(--theme-bubble-y, 50%));
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html,
+  body,
+  main#home,
+  main#home :is(h1, h2, h3, p, span, a, button, svg),
+  main#home :is(.bg-black, .bg-gray-200, .dark\:bg-white, .dark\:bg-neutral-800),
   .theme-bubble-transition {
     transition: none;
   }
