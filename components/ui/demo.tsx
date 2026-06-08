@@ -90,10 +90,17 @@ export function AppleStyleDock() {
 
   function handleThemeToggle() {
     const root = document.documentElement;
+    const body = document.body;
+    const isNextLight = nextTheme === 'light';
 
-    root.classList.remove(isDark ? 'dark' : 'light');
+    root.classList.remove('dark', 'light');
     root.classList.add(nextTheme);
+    root.dataset.theme = nextTheme;
     root.style.colorScheme = nextTheme;
+    root.style.backgroundColor = isNextLight ? '#ffffff' : '#000000';
+    body.style.backgroundColor = isNextLight ? '#ffffff' : '#000000';
+    body.style.color = isNextLight ? '#0f172a' : '#f8fafc';
+    localStorage.setItem('theme', nextTheme);
 
     setTheme(nextTheme);
   }
