@@ -1,9 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Sun,
-} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -89,6 +86,17 @@ export function AppleStyleDock() {
   const dockDistance = isMobile ? 72 : 120;
   const dockPanelHeight = isMobile ? 40 : 56;
   const dockBaseItemSize = isMobile ? 26 : 36;
+  const nextTheme = isDark ? 'light' : 'dark';
+
+  function handleThemeToggle() {
+    const root = document.documentElement;
+
+    root.classList.remove(isDark ? 'dark' : 'light');
+    root.classList.add(nextTheme);
+    root.style.colorScheme = nextTheme;
+
+    setTheme(nextTheme);
+  }
 
   return (
     <div className='fixed bottom-4 left-1/2 z-50 max-w-[calc(100vw-1.5rem)] -translate-x-1/2 sm:bottom-8 sm:max-w-full'>
@@ -163,7 +171,7 @@ export function AppleStyleDock() {
               type='button'
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               aria-pressed={isDark}
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              onClick={handleThemeToggle}
               className='flex h-full w-full cursor-pointer items-center justify-center text-neutral-600 dark:text-neutral-300'
             >
               {isDark ? (
