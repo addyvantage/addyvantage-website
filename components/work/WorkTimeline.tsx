@@ -29,30 +29,25 @@ function WorkTimeline() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const mediaQuery = window.matchMedia("(max-width: 767px)");
-    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updateIsMobile = () => {
       setIsMobile(mediaQuery.matches);
-      setReducedMotion(motionQuery.matches);
     };
 
     updateIsMobile();
     mediaQuery.addEventListener("change", updateIsMobile);
-    motionQuery.addEventListener("change", updateIsMobile);
 
     return () => {
       mediaQuery.removeEventListener("change", updateIsMobile);
-      motionQuery.removeEventListener("change", updateIsMobile);
     };
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (isMobile || reducedMotion || window.matchMedia("(max-width: 767px), (prefers-reduced-motion: reduce)").matches) return;
+    if (isMobile) return;
 
     const section = sectionRef.current;
     const stage = stageRef.current;
@@ -341,16 +336,15 @@ function WorkTimeline() {
       triggerRef.current = null;
       ctx.revert();
     };
-  }, [isMobile, reducedMotion]);
-
-  if (reducedMotion) {
-    return <StaticWorkTimeline />;
-  }
+  }, [isMobile]);
 
   if (isMobile) {
     return <MobileWorkTimeline />;
   }
 
+  const lineStartPercent = 18;
+  const lineEndPercent = 82;
+  const lineHeightPercent = lineEndPercent - lineStartPercent;
   const desktopProgressRatio =
     workTimelineData.length === 1
       ? 1
@@ -360,23 +354,6 @@ function WorkTimeline() {
     <section ref={sectionRef} className="relative overflow-x-hidden bg-white dark:bg-neutral-950">
       <div
         ref={stageRef}
-        tabIndex={0}
-        role="group"
-        aria-label="Work timeline. Scroll or use arrow keys to move between entries."
-        onKeyDown={(event) => {
-          if (event.target !== event.currentTarget) return;
-          const key = event.key;
-          if (["ArrowDown", "PageDown", "ArrowRight"].includes(key)) {
-            event.preventDefault();
-            goToIndexRef.current(Math.min(currentIndexRef.current + 1, workTimelineData.length - 1));
-          } else if (["ArrowUp", "PageUp", "ArrowLeft"].includes(key)) {
-            event.preventDefault();
-            goToIndexRef.current(Math.max(currentIndexRef.current - 1, 0));
-          } else if (key === "Home" || key === "End") {
-            event.preventDefault();
-            goToIndexRef.current(key === "Home" ? 0 : workTimelineData.length - 1);
-          }
-        }}
         className="relative flex h-screen items-center overflow-hidden bg-white dark:bg-neutral-950"
       >
         <div className="pointer-events-none absolute left-[60px] top-[18%] z-20 h-[64%] w-0 md:left-1/2">
@@ -445,22 +422,6 @@ function WorkTimeline() {
       </div>
     </section>
   );
-}
-
-function StaticWorkTimeline() {
-  return <div className="page-shell work-grid" aria-label="Selected work and experience">
-    {workTimelineData.map((item) => <article className="work-card" key={item.id}>
-      <div className="project-label">{item.tagline}</div>
-      <h3>{item.heading}</h3>
-      <p>{item.description}</p>
-      <p>{item.details}</p>
-      <div className="inline-links">
-        {item.caseStudyUrl && <a href={item.caseStudyUrl}>Case study ↗</a>}
-        {item.githubUrl && <a href={item.githubUrl} target="_blank" rel="noopener noreferrer">Source ↗</a>}
-        {item.liveUrl && <a href={item.liveUrl} target="_blank" rel="noopener noreferrer">Live prototype ↗</a>}
-      </div>
-    </article>)}
-  </div>;
 }
 
 function MobileWorkTimeline() {
@@ -588,7 +549,6 @@ function MobileTimelineDot({
       {isCurrent ? (
         <motion.button
           type="button"
-          aria-label={`Show ${item.heading}`}
           className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -599,7 +559,6 @@ function MobileTimelineDot({
       ) : null}
       <motion.button
         type="button"
-        aria-label={`Show ${item.heading}`}
         className={`absolute right-0 top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border ${
           isComplete
             ? "border-slate-900 bg-slate-900 dark:border-white dark:bg-white"
@@ -640,14 +599,13 @@ function MobileTimelineCardSection({
   const localRef = useRef<HTMLElement | null>(null);
   const inView = useInView(localRef, { amount: 0.58 });
   const actionLinks = [
-    item.caseStudyUrl ? { href: item.caseStudyUrl, label: "Case study", external: false } : null,
-    item.liveUrl ? { href: item.liveUrl, label: "Live prototype", external: true } : null,
-    item.githubUrl ? { href: item.githubUrl, label: "Source", external: true } : null,
-  ].filter((link): link is { href: string; label: string; external: boolean } => link !== null);
+    item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
+    item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
+  ].filter((link): link is { href: string; label: string } => link !== null);
   const sectionMinHeight = Math.max(dimensions.height - 20, 640);
   const cardMaxWidth =
     dimensions.width < 480
-      ? Math.max(dimensions.width - 108, 190)
+      ? Math.max(dimensions.width - 108, 248)
       : Math.max(dimensions.width - 124, 292);
   const expandedCardMaxHeight = Math.max(dimensions.height - 220, 280);
 
@@ -677,6 +635,7 @@ function MobileTimelineCardSection({
         className={`w-full cursor-pointer overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 text-left shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
           isExpanded ? "overflow-y-auto overscroll-contain" : ""
         }`}
+        aria-expanded={isExpanded}
         animate={{
           boxShadow: isExpanded
             ? "0 0 34px rgba(255,255,255,0.10)"
@@ -688,10 +647,17 @@ function MobileTimelineCardSection({
           if ((event.target as HTMLElement).closest("a")) return;
           onToggle();
         }}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          onToggle();
+        }}
+        role="button"
         style={{
           maxHeight: isExpanded ? `${expandedCardMaxHeight}px` : undefined,
           maxWidth: `${cardMaxWidth}px`,
         }}
+        tabIndex={0}
         transition={{ duration: 0.28, ease: "easeOut" }}
       >
         <div className="space-y-4">
@@ -699,18 +665,12 @@ function MobileTimelineCardSection({
             <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
               {item.tagline}
             </p>
-            <h3 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
+            <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
               {item.heading}
-            </h3>
+            </h2>
             <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
               {item.description}
             </p>
-            <button
-              type="button"
-              aria-expanded={isExpanded}
-              onClick={(event) => { event.stopPropagation(); onToggle(); }}
-              className="inline-flex min-h-11 items-center gap-2 border-b border-current text-sm font-semibold text-slate-900 dark:text-white"
-            >{isExpanded ? "Hide details" : "Explore details"} <span aria-hidden="true">{isExpanded ? "−" : "+"}</span></button>
           </div>
 
           <AnimatePresence initial={false}>
@@ -749,8 +709,8 @@ function MobileTimelineCardSection({
                             onClick={(event) => {
                               event.stopPropagation();
                             }}
-                            rel={link.external ? "noopener noreferrer" : undefined}
-                            target={link.external ? "_blank" : undefined}
+                            rel="noopener noreferrer"
+                            target="_blank"
                           >
                             {link.label}
                           </a>
