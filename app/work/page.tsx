@@ -19,13 +19,16 @@ export default function WorkPage() {
         <section className="page-intro work-intro">
           <p className="eyebrow">SELECTED WORK</p>
           <h1>Things I’ve built, and what I learned making them.</h1>
-          <p>Products and experience at different stages. Scroll through the work, open a card for its decisions, and follow the links for public evidence.</p>
+          <p>Scroll through projects and experience one at a time. Hover a card for the details, or open it by keyboard or touch.</p>
+          <a className="text-link" href="#after-timeline">Skip to smaller experiments</a>
         </section>
-        <section className="timeline-section" aria-labelledby="timeline-heading">
-          <div className="timeline-section-heading"><span className="section-index">01 / THE JOURNEY</span><h2 id="timeline-heading">Work, one piece at a time.</h2><p>Hover a card or use its details button. Every project links to a fuller case study and source.</p></div>
-          <WorkTimeline />
-        </section>
-        <section className="index-section" aria-labelledby="experiments-heading">
+      </div>
+      <section className="timeline-section" aria-labelledby="timeline-heading">
+        <div className="page-shell timeline-section-heading"><span className="section-index">01 / THE JOURNEY</span><h2 id="timeline-heading">Work, one piece at a time.</h2><p>Projects and roles, with more detail when you open each card.</p></div>
+        <WorkTimeline />
+      </section>
+      <div className="page-shell">
+        <section id="after-timeline" className="index-section" aria-labelledby="experiments-heading">
           <div className="section-index">02 / MORE EXPERIMENTS</div>
           <div><h2 id="experiments-heading">Smaller investigations</h2><div className="experiment-list">{experiments.map(item => <article key={item.name}><div className="project-label">{item.status}</div><h3>{item.name}</h3><p>{item.summary}</p><a className="text-link" href={item.source} target="_blank" rel="noopener noreferrer">Inspect repository ↗</a></article>)}</div></div>
         </section>
