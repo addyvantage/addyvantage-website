@@ -451,11 +451,6 @@ html.dark .portrait-light { display:none!important; }
 .work-card p { font-size:1rem; }
 .work-card .role-note { font-size:.89rem; }
 .work-card .stack-line { margin:auto 0 1.4rem; padding-top:1.4rem; }
-.work-intro { padding-bottom:3.5rem; }
-.timeline-section { border-top:1px solid var(--rule); padding:3.5rem 0 4.5rem; }
-.timeline-section-heading { max-width:42rem; }
-.timeline-section-heading h2 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; letter-spacing:-.04em; margin:.4rem 0 .8rem; }
-.timeline-section-heading p { color:var(--muted); line-height:1.6; font-size:1.04rem; }
 .experiment-list { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:1.5rem; }
 .experiment-list article { border-top:1px solid var(--rule); padding-top:1.3rem; }
 .experiment-list h3 { font-size:1.3rem; margin:.6rem 0; }
@@ -504,7 +499,6 @@ html.dark .portrait-light { display:none!important; }
   .page-intro { padding:4rem 0 3rem; }
   .page-intro h1 { font-size:clamp(2.8rem,11vw,4.6rem); }
   .work-grid,.experiment-list { display:block; }
-  .timeline-section { padding:2.7rem 0 3rem; }
   .work-card { border-bottom:1px solid var(--rule); }
   .experiment-list article { margin:1.5rem 0; }
   .case-facts { display:block; }

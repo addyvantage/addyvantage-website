@@ -81,22 +81,21 @@ function WorkTimelineCard({
     [isExpanded, isRight]
   );
   const actionLinks = [
-    item.caseStudyUrl ? { href: item.caseStudyUrl, label: "Case study", external: false } : null,
-    item.liveUrl ? { href: item.liveUrl, label: "Live prototype", external: true } : null,
-    item.githubUrl ? { href: item.githubUrl, label: "Source", external: true } : null,
-  ].filter((link): link is { href: string; label: string; external: boolean } => link !== null);
+    item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
+    item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
+  ].filter((link): link is { href: string; label: string } => link !== null);
 
   return (
     <div
       ref={panelRef}
       aria-hidden={!isActive}
-      inert={!isActive}
       className="pointer-events-none absolute inset-0 flex items-center will-change-transform"
     >
       <div className="w-full px-6 pb-32 pt-24 sm:px-8 md:px-10 md:pb-40 lg:px-14">
         <div className={shellClasses}>
           <motion.article
             ref={shellRef}
+            aria-expanded={isActive && isExpanded}
             animate={{
               boxShadow: isExpanded
                 ? "0 28px 80px rgba(15,23,42,0.14)"
@@ -115,7 +114,6 @@ function WorkTimelineCard({
             }}
             onPointerLeave={() => {
               if (!canHover || !isActive || isTransitioning) return;
-              if (shellRef.current?.contains(document.activeElement)) return;
               setIsExpanded(false);
               glowOpacity.set(0);
             }}
@@ -147,9 +145,9 @@ function WorkTimelineCard({
                 <p className="text-[0.98rem] font-semibold uppercase tracking-[0.28em] text-neutral-600 dark:text-neutral-200 md:text-[1.08rem]">
                   {item.tagline}
                 </p>
-                <h3 className="text-[1.85rem] font-semibold leading-tight text-slate-900 dark:text-white md:text-[2.3rem]">
+                <h2 className="text-[1.85rem] font-semibold leading-tight text-slate-900 dark:text-white md:text-[2.3rem]">
                   {item.heading}
-                </h3>
+                </h2>
                 <p
                   className={`text-[1rem] leading-relaxed text-neutral-700 dark:text-neutral-300 md:text-[1.08rem] ${
                     isExpanded ? "max-w-[56ch] md:max-w-[62ch]" : "max-w-[42ch]"
@@ -157,15 +155,6 @@ function WorkTimelineCard({
                 >
                   {item.description}
                 </p>
-                <button
-                  type="button"
-                  aria-expanded={isExpanded}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setIsExpanded((current) => !current);
-                  }}
-                  className="inline-flex min-h-11 items-center gap-2 border-b border-current text-sm font-semibold text-slate-900 dark:text-white"
-                >{isExpanded ? "Hide details" : "Explore details"} <span aria-hidden="true">{isExpanded ? "−" : "+"}</span></button>
               </div>
 
               <AnimatePresence initial={false}>
@@ -201,8 +190,8 @@ function WorkTimelineCard({
                                 key={link.label}
                                 className="inline-flex items-center rounded-full border border-slate-900/12 px-3.5 py-2 text-[0.9rem] font-medium uppercase tracking-[0.22em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
                                 href={link.href}
-                                rel={link.external ? "noopener noreferrer" : undefined}
-                                target={link.external ? "_blank" : undefined}
+                                rel="noopener noreferrer"
+                                target="_blank"
                               >
                                 {link.label}
                               </a>
