@@ -1,106 +1,817 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { projects } from "@/data/projects";
+import { AnimatePresence, motion, useInView } from "framer-motion";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { Observer } from "gsap/Observer";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-type Entry = {
-  id: string;
-  eyebrow: string;
-  title: string;
-  summary: string;
-  detail: string;
-  tags: string[];
-  href?: string;
-  source?: string;
-  demo?: string;
-};
+import { WorkTimelineCard } from "@/components/work/WorkTimelineCard";
+import { workTimelineData, type WorkTimelineItem } from "@/components/work/work-data";
 
-const experience: Entry[] = [
-  {
-    id: "american-express",
-    eyebrow: "SEP 2026 — PRESENT · APPRENTICESHIP",
-    title: "American Express",
-    summary: "Apprentice in Credit and Fraud Risk.",
-    detail: "Early in the role, learning and contributing to data, product, and workflow problems. Specific internal work is private.",
-    tags: ["Data", "Product operations", "Workflows"],
-  },
-  {
-    id: "nus",
-    eyebrow: "2025 · TEAM ANALYTICS PROJECT",
-    title: "NUS Global Immersion Programme",
-    summary: "Airbnb data analysis and reporting with a five-person team.",
-    detail: "Worked on data preprocessing, analysis, and reporting with tools including Power BI and Orange ML. No measured outcome is claimed here.",
-    tags: ["Analytics", "Power BI", "Orange ML"],
-  },
-  {
-    id: "sukrit",
-    eyebrow: "DEC 2024 — JAN 2025 · INTERNSHIP",
-    title: "Sukrit Technologies",
-    summary: "Data Science Intern working on Python and SQL data cleaning.",
-    detail: "Contributed to cleaning and reporting work. The scope is stated conservatively; no quantitative impact claim is made here.",
-    tags: ["Python", "SQL", "Reporting"],
-  },
-];
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-const entries: Entry[] = [
-  ...projects.map((project) => ({
-    id: project.slug,
-    eyebrow: `${project.kind.toUpperCase()} · ${project.status.toUpperCase()}`,
-    title: project.name,
-    summary: project.summary,
-    detail: `${project.role} ${project.decision}`,
-    tags: project.stack.slice(0, 4),
-    href: `/work/${project.slug}`,
-    source: project.source,
-    demo: project.demo,
-  })),
-  ...experience,
-];
+function WorkTimeline() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const panelRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const triggerRef = useRef<ScrollTrigger | null>(null);
+  const transitionRef = useRef<gsap.core.Timeline | null>(null);
+  const observerRef = useRef<ReturnType<typeof ScrollTrigger.observe> | null>(
+    null
+  );
+  const goToIndexRef = useRef<(index: number) => void>(() => {});
+  const currentIndexRef = useRef(0);
+  const animatingRef = useRef(false);
+  const observerEnabledRef = useRef(false);
+  const sectionActiveRef = useRef(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
-export function WorkTimeline() {
-  const [expanded, setExpanded] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateIsMobile = () => {
+      setIsMobile(mediaQuery.matches);
+      setReducedMotion(motionQuery.matches);
+    };
+
+    updateIsMobile();
+    mediaQuery.addEventListener("change", updateIsMobile);
+    motionQuery.addEventListener("change", updateIsMobile);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateIsMobile);
+      motionQuery.removeEventListener("change", updateIsMobile);
+    };
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    if (isMobile || reducedMotion || window.matchMedia("(max-width: 767px), (prefers-reduced-motion: reduce)").matches) return;
+
+    const section = sectionRef.current;
+    const stage = stageRef.current;
+    gsap.registerPlugin(ScrollTrigger, Observer);
+
+    const panels = panelRefs.current.filter(
+      (panel): panel is HTMLDivElement => panel !== null
+    );
+
+    if (!section || !stage || panels.length === 0) return;
+
+    const panelCount = panels.length;
+    const lastIndex = panelCount - 1;
+    const clampIndex = (value: number) =>
+      Math.max(0, Math.min(value, lastIndex));
+    const boundaryOffset = 24;
+
+    const ctx = gsap.context(() => {
+      const enableObserver = () => {
+        if (!observerRef.current || observerEnabledRef.current) return;
+        observerRef.current.enable();
+        observerEnabledRef.current = true;
+      };
+
+      const disableObserver = () => {
+        if (!observerRef.current || !observerEnabledRef.current) return;
+        observerRef.current.disable();
+        observerEnabledRef.current = false;
+      };
+
+      const setRestingPanelState = (index: number) => {
+        panels.forEach((panel, panelIndex) => {
+          const isActive = panelIndex === index;
+          const isBefore = panelIndex < index;
+
+          gsap.set(panel, {
+            autoAlpha: isActive ? 1 : 0,
+            yPercent: isActive ? 0 : isBefore ? -14 : 16,
+            scale: isActive ? 1 : 0.97,
+            filter: isActive ? "blur(0px)" : "blur(10px)",
+            zIndex: isActive ? 2 : 0,
+            pointerEvents: isActive ? "auto" : "none",
+            overwrite: "auto",
+          });
+        });
+      };
+
+      const commitActiveIndex = (index: number) => {
+        const nextIndex = clampIndex(index);
+        currentIndexRef.current = nextIndex;
+        setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+      };
+
+      const getScrollForIndex = (index: number) => {
+        const trigger = triggerRef.current;
+        if (!trigger) return window.scrollY;
+        if (lastIndex === 0) return trigger.start;
+
+        const step = (trigger.end - trigger.start) / lastIndex;
+        return trigger.start + step * clampIndex(index);
+      };
+
+      const snapScrollToIndex = (index: number) => {
+        window.scrollTo({ top: getScrollForIndex(index), behavior: "auto" });
+        ScrollTrigger.update();
+      };
+
+      const releaseToNativeScroll = (direction: 1 | -1) => {
+        const trigger = triggerRef.current;
+        if (!trigger) return;
+
+        transitionRef.current?.kill();
+        transitionRef.current = null;
+        disableObserver();
+        animatingRef.current = true;
+        setIsTransitioning(true);
+        sectionActiveRef.current = false;
+
+        requestAnimationFrame(() => {
+          window.scrollTo({
+            top:
+              direction > 0
+                ? trigger.end + boundaryOffset
+                : Math.max(trigger.start - boundaryOffset, 0),
+            behavior: "auto",
+          });
+          animatingRef.current = false;
+          setIsTransitioning(false);
+        });
+      };
+
+      const setImmediateIndex = (index: number, shouldSnap = true) => {
+        const nextIndex = clampIndex(index);
+        transitionRef.current?.kill();
+        transitionRef.current = null;
+        gsap.killTweensOf(panels);
+        animatingRef.current = false;
+        commitActiveIndex(nextIndex);
+        setIsTransitioning(false);
+        setRestingPanelState(nextIndex);
+        if (shouldSnap) {
+          snapScrollToIndex(nextIndex);
+        }
+      };
+
+      const transitionToIndex = (index: number, direction: 1 | -1) => {
+        if (animatingRef.current) return;
+
+        if (index < 0 || index > lastIndex) {
+          releaseToNativeScroll(direction);
+          return;
+        }
+
+        const nextIndex = clampIndex(index);
+        const previousIndex = currentIndexRef.current;
+
+        if (nextIndex === previousIndex) {
+          snapScrollToIndex(nextIndex);
+          return;
+        }
+
+        const outgoingPanel = panels[previousIndex];
+        const incomingPanel = panels[nextIndex];
+
+        animatingRef.current = true;
+        setIsTransitioning(true);
+        disableObserver();
+        transitionRef.current?.kill();
+        transitionRef.current = null;
+
+        gsap.killTweensOf(panels);
+        panels.forEach((panel, panelIndex) => {
+          if (panelIndex !== previousIndex && panelIndex !== nextIndex) {
+            gsap.set(panel, {
+              autoAlpha: 0,
+              yPercent: panelIndex < nextIndex ? -14 : 16,
+              scale: 0.97,
+              filter: "blur(10px)",
+              zIndex: 0,
+              pointerEvents: "none",
+              overwrite: "auto",
+            });
+          }
+        });
+
+        gsap.set(outgoingPanel, {
+          autoAlpha: 1,
+          yPercent: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          zIndex: 2,
+          pointerEvents: "none",
+          overwrite: "auto",
+        });
+        gsap.set(incomingPanel, {
+          autoAlpha: 1,
+          yPercent: direction > 0 ? 18 : -18,
+          scale: 0.985,
+          filter: "blur(12px)",
+          zIndex: 3,
+          pointerEvents: "none",
+          overwrite: "auto",
+        });
+
+        commitActiveIndex(nextIndex);
+
+        transitionRef.current = gsap
+          .timeline({
+            defaults: {
+              duration: 0.72,
+              ease: "power2.out",
+              overwrite: "auto",
+            },
+            onComplete: () => {
+              setRestingPanelState(nextIndex);
+              snapScrollToIndex(nextIndex);
+              transitionRef.current = null;
+              animatingRef.current = false;
+              setIsTransitioning(false);
+
+              if (triggerRef.current?.isActive && sectionActiveRef.current) {
+                enableObserver();
+              }
+            },
+          })
+          .to(
+            outgoingPanel,
+            {
+              autoAlpha: 0,
+              yPercent: direction > 0 ? -12 : 12,
+              scale: 0.97,
+              filter: "blur(10px)",
+            },
+            0
+          )
+          .to(
+            incomingPanel,
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+              scale: 1,
+              filter: "blur(0px)",
+            },
+            0.12
+          );
+      };
+
+      setRestingPanelState(0);
+      commitActiveIndex(0);
+
+      observerRef.current = ScrollTrigger.observe({
+        target: window,
+        type: "wheel,touch",
+        preventDefault: true,
+        allowClicks: true,
+        tolerance: 24,
+        onDown: () => {
+          transitionToIndex(currentIndexRef.current + 1, 1);
+        },
+        onUp: () => {
+          transitionToIndex(currentIndexRef.current - 1, -1);
+        },
+      });
+      disableObserver();
+
+      triggerRef.current = ScrollTrigger.create({
+        trigger: section,
+        pin: stage,
+        start: "top top",
+        end: () => `+=${window.innerHeight * Math.max(lastIndex, 1)}`,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onEnter: () => {
+          sectionActiveRef.current = true;
+          setImmediateIndex(0, false);
+          enableObserver();
+        },
+        onEnterBack: () => {
+          sectionActiveRef.current = true;
+          setImmediateIndex(lastIndex, false);
+          enableObserver();
+        },
+        onLeave: () => {
+          sectionActiveRef.current = false;
+          disableObserver();
+          animatingRef.current = false;
+          setIsTransitioning(false);
+        },
+        onLeaveBack: () => {
+          sectionActiveRef.current = false;
+          disableObserver();
+          animatingRef.current = false;
+          setIsTransitioning(false);
+        },
+        onRefresh: () => {
+          setRestingPanelState(currentIndexRef.current);
+        },
+      });
+
+      goToIndexRef.current = (index: number) => {
+        if (animatingRef.current) return;
+
+        if (index === currentIndexRef.current) {
+          setImmediateIndex(index);
+          return;
+        }
+
+        transitionToIndex(
+          index,
+          index > currentIndexRef.current ? 1 : -1
+        );
+      };
+
+      ScrollTrigger.refresh();
+    }, section);
+
+    return () => {
+      transitionRef.current?.kill();
+      transitionRef.current = null;
+      goToIndexRef.current = () => {};
+      observerEnabledRef.current = false;
+      sectionActiveRef.current = false;
+      observerRef.current?.kill();
+      observerRef.current = null;
+      triggerRef.current?.kill();
+      triggerRef.current = null;
+      ctx.revert();
+    };
+  }, [isMobile, reducedMotion]);
+
+  if (reducedMotion) {
+    return <StaticWorkTimeline />;
+  }
+
+  if (isMobile) {
+    return <MobileWorkTimeline />;
+  }
+
+  const desktopProgressRatio =
+    workTimelineData.length === 1
+      ? 1
+      : activeIndex / (workTimelineData.length - 1);
 
   return (
-    <div className="work-timeline" aria-label="Selected work and experience">
-      {entries.map((item, index) => {
-        const isExpanded = expanded === item.id;
-        const detailId = `timeline-detail-${item.id}`;
-        return (
-          <div className="timeline-step" key={item.id}>
-            <span className="timeline-marker" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-            <article
-              className={`timeline-card${isExpanded ? " is-expanded" : ""}`}
-              onPointerEnter={(event) => {
-                if (event.pointerType === "mouse") setExpanded(item.id);
-              }}
-              onPointerLeave={(event) => {
-                if (event.pointerType === "mouse") setExpanded((current) => current === item.id ? null : current);
-              }}
-            >
-              <div className="timeline-card-topline"><span>{item.eyebrow}</span><span aria-hidden="true">↗</span></div>
-              <h3>{item.title}</h3>
-              <p>{item.summary}</p>
-              <button
-                className="timeline-expand"
-                type="button"
-                aria-expanded={isExpanded}
-                aria-controls={detailId}
-                onClick={() => setExpanded(isExpanded ? null : item.id)}
-              >{isExpanded ? "Hide details" : "Explore details"} <span aria-hidden="true">{isExpanded ? "−" : "+"}</span></button>
-              <div className="timeline-detail" id={detailId} hidden={!isExpanded}>
-                <p>{item.detail}</p>
-                <div className="timeline-tags">{item.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+    <section ref={sectionRef} className="relative overflow-x-hidden bg-white dark:bg-neutral-950">
+      <div
+        ref={stageRef}
+        tabIndex={0}
+        role="group"
+        aria-label="Work timeline. Scroll or use arrow keys to move between entries."
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const key = event.key;
+          if (["ArrowDown", "PageDown", "ArrowRight"].includes(key)) {
+            event.preventDefault();
+            goToIndexRef.current(Math.min(currentIndexRef.current + 1, workTimelineData.length - 1));
+          } else if (["ArrowUp", "PageUp", "ArrowLeft"].includes(key)) {
+            event.preventDefault();
+            goToIndexRef.current(Math.max(currentIndexRef.current - 1, 0));
+          } else if (key === "Home" || key === "End") {
+            event.preventDefault();
+            goToIndexRef.current(key === "Home" ? 0 : workTimelineData.length - 1);
+          }
+        }}
+        className="relative flex h-screen items-center overflow-hidden bg-white dark:bg-neutral-950"
+      >
+        <div className="pointer-events-none absolute left-[60px] top-[18%] z-20 h-[64%] w-0 md:left-1/2">
+          <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-300/90 dark:bg-white/12" />
+          <div
+            className="absolute left-1/2 top-0 w-px -translate-x-1/2 origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.10)] transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.18)]"
+            style={{ height: `${desktopProgressRatio * 100}%` }}
+          />
+
+          {workTimelineData.map((item, index) => {
+            const isActive = index === activeIndex;
+            const isComplete = index < activeIndex;
+            const dotTop =
+              workTimelineData.length === 1
+                ? 50
+                : (index / (workTimelineData.length - 1)) * 100;
+
+            return (
+              <div
+                key={item.id}
+                className="absolute left-1/2 top-0"
+                style={{ top: `${dotTop}%`, transform: "translate(-50%, -50%)" }}
+              >
+                {isActive ? (
+                  <button
+                    key={`${item.id}-active`}
+                    type="button"
+                    onClick={() => goToIndexRef.current(index)}
+                    className="pointer-events-auto relative whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[1.16rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
+                    aria-label={`Show ${item.heading}`}
+                  >
+                    {item.dateLabel}
+                  </button>
+                ) : (
+                  <button
+                    key={`${item.id}-inactive`}
+                    type="button"
+                    onClick={() => goToIndexRef.current(index)}
+                    className={`pointer-events-auto relative block h-4 w-4 rounded-full border transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                      isComplete
+                        ? "border-slate-900 bg-slate-900 shadow-[0_0_16px_rgba(15,23,42,0.18)] dark:border-white dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.24)]"
+                        : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-900"
+                    }`}
+                    aria-label={`Show ${item.heading}`}
+                  />
+                )}
               </div>
-              {(item.href || item.source || item.demo) && <div className="inline-links timeline-links">
-                {item.href && <Link href={item.href}>Case study ↗</Link>}
-                {item.source && <a href={item.source} target="_blank" rel="noopener noreferrer">Source ↗</a>}
-                {item.demo && <a href={item.demo} target="_blank" rel="noopener noreferrer">Live prototype ↗</a>}
-              </div>}
-            </article>
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+
+        <div className="absolute inset-0">
+          {workTimelineData.map((item, index) => (
+            <WorkTimelineCard
+              key={item.id}
+              index={index}
+              isActive={activeIndex === index}
+              isTransitioning={isTransitioning}
+              item={item}
+              panelRef={(node) => {
+                panelRefs.current[index] = node;
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StaticWorkTimeline() {
+  return <div className="page-shell work-grid" aria-label="Selected work and experience">
+    {workTimelineData.map((item) => <article className="work-card" key={item.id}>
+      <div className="project-label">{item.tagline}</div>
+      <h3>{item.heading}</h3>
+      <p>{item.description}</p>
+      <p>{item.details}</p>
+      <div className="inline-links">
+        {item.caseStudyUrl && <a href={item.caseStudyUrl}>Case study ↗</a>}
+        {item.githubUrl && <a href={item.githubUrl} target="_blank" rel="noopener noreferrer">Source ↗</a>}
+        {item.liveUrl && <a href={item.liveUrl} target="_blank" rel="noopener noreferrer">Live prototype ↗</a>}
+      </div>
+    </article>)}
+  </div>;
+}
+
+function MobileWorkTimeline() {
+  const dimensions = useMobileDimensions();
+  const sectionRefs = useRef<Array<HTMLElement | null>>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setExpandedId(null);
+  }, [activeIndex]);
+
+  const timelineTop = dimensions.width < 480 ? 124 : 136;
+  const timelineBottom = dimensions.width < 480 ? 156 : 168;
+  const timelineRight = dimensions.width < 480 ? 24 : 30;
+  const timelineHeight = Math.max(dimensions.height - timelineTop - timelineBottom, 280);
+  const progressHeight =
+    workTimelineData.length === 1
+      ? timelineHeight
+      : (timelineHeight * activeIndex) / (workTimelineData.length - 1);
+
+  const scrollToSection = (index: number) => {
+    const section = sectionRefs.current[index];
+    if (!section || typeof window === "undefined") return;
+
+    window.scrollTo({
+      top: section.offsetTop,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section className="relative overflow-x-hidden bg-white dark:bg-neutral-950">
+      <div className="pointer-events-none fixed inset-y-0 right-0 z-20 w-[96px]">
+        <div
+          className="absolute w-px bg-slate-300/90 dark:bg-white/12"
+          style={{
+            right: `${timelineRight}px`,
+            top: `${timelineTop}px`,
+            height: `${timelineHeight}px`,
+          }}
+        />
+        <motion.div
+          className="absolute w-px origin-top bg-slate-900 shadow-[0_0_14px_rgba(15,23,42,0.12)] dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.22)]"
+          animate={{ height: `${progressHeight}px` }}
+          style={{
+            right: `${timelineRight}px`,
+            top: `${timelineTop}px`,
+          }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+        />
+
+        {workTimelineData.map((item, index) => {
+          const isComplete = activeIndex >= index;
+          const isCurrent = activeIndex === index;
+          const dotTop =
+            workTimelineData.length === 1
+              ? timelineTop
+              : timelineTop +
+                (timelineHeight * index) / (workTimelineData.length - 1);
+
+          return (
+            <MobileTimelineDot
+              key={item.id}
+              index={index}
+              isComplete={isComplete}
+              isCurrent={isCurrent}
+              item={item}
+              onDotClick={scrollToSection}
+              top={dotTop}
+              right={timelineRight}
+            />
+          );
+        })}
+      </div>
+
+      <div className="relative z-10 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
+        {workTimelineData.map((item, index) => (
+          <MobileTimelineCardSection
+            key={item.id}
+            dimensions={dimensions}
+            index={index}
+            isActive={activeIndex === index}
+            isExpanded={expandedId === item.id}
+            item={item}
+            onActivate={setActiveIndex}
+            onToggle={() => {
+              setExpandedId((current) => (current === item.id ? null : item.id));
+            }}
+            sectionRef={(node) => {
+              sectionRefs.current[index] = node;
+            }}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MobileTimelineDot({
+  item,
+  index,
+  isComplete,
+  isCurrent,
+  onDotClick,
+  top,
+  right,
+}: {
+  item: WorkTimelineItem;
+  index: number;
+  isComplete: boolean;
+  isCurrent: boolean;
+  onDotClick: (index: number) => void;
+  top: number;
+  right: number;
+}) {
+  return (
+    <div
+      className="pointer-events-auto absolute"
+      style={{
+        right: `${right - 7}px`,
+        top: `${top}px`,
+      }}
+    >
+      {isCurrent ? (
+        <motion.button
+          type="button"
+          aria-label={`Show ${item.heading}`}
+          className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => onDotClick(index)}
+        >
+          {item.dateLabel}
+        </motion.button>
+      ) : null}
+      <motion.button
+        type="button"
+        aria-label={`Show ${item.heading}`}
+        className={`absolute right-0 top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border ${
+          isComplete
+            ? "border-slate-900 bg-slate-900 dark:border-white dark:bg-white"
+            : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950"
+        }`}
+        animate={{
+          boxShadow: isComplete
+            ? "0 0 14px rgba(255,255,255,0.18)"
+            : "0 0 0 rgba(255,255,255,0)",
+          scale: isCurrent ? 1.22 : isComplete ? 1.04 : 1,
+        }}
+        onClick={() => onDotClick(index)}
+        transition={{ duration: 0.24, ease: "easeOut" }}
+      />
     </div>
   );
 }
+
+function MobileTimelineCardSection({
+  dimensions,
+  index,
+  isActive,
+  isExpanded,
+  item,
+  onActivate,
+  onToggle,
+  sectionRef,
+}: {
+  dimensions: { width: number; height: number; isMobile: boolean };
+  index: number;
+  isActive: boolean;
+  isExpanded: boolean;
+  item: WorkTimelineItem;
+  onActivate: (index: number) => void;
+  onToggle: () => void;
+  sectionRef: (node: HTMLElement | null) => void;
+}) {
+  const localRef = useRef<HTMLElement | null>(null);
+  const inView = useInView(localRef, { amount: 0.58 });
+  const actionLinks = [
+    item.caseStudyUrl ? { href: item.caseStudyUrl, label: "Case study", external: false } : null,
+    item.liveUrl ? { href: item.liveUrl, label: "Live prototype", external: true } : null,
+    item.githubUrl ? { href: item.githubUrl, label: "Source", external: true } : null,
+  ].filter((link): link is { href: string; label: string; external: boolean } => link !== null);
+  const sectionMinHeight = Math.max(dimensions.height - 20, 640);
+  const cardMaxWidth =
+    dimensions.width < 480
+      ? Math.max(dimensions.width - 108, 190)
+      : Math.max(dimensions.width - 124, 292);
+  const expandedCardMaxHeight = Math.max(dimensions.height - 220, 280);
+
+  useEffect(() => {
+    if (inView) {
+      onActivate(index);
+    }
+  }, [inView, index, onActivate]);
+
+  return (
+    <motion.section
+      ref={(node) => {
+        localRef.current = node;
+        sectionRef(node);
+      }}
+      animate={{
+        opacity: isActive ? 1 : 0.74,
+        scale: isActive ? 1 : 0.975,
+        y: isActive ? 0 : 18,
+      }}
+      className="relative flex items-center pl-5 pr-[5.5rem] sm:pl-6 sm:pr-[6.25rem]"
+      initial={{ opacity: 0, y: 32 }}
+      style={{ minHeight: `${sectionMinHeight}px` }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      <motion.article
+        className={`w-full cursor-pointer overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 text-left shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
+          isExpanded ? "overflow-y-auto overscroll-contain" : ""
+        }`}
+        animate={{
+          boxShadow: isExpanded
+            ? "0 0 34px rgba(255,255,255,0.10)"
+            : isActive
+              ? "0 20px 52px rgba(15,23,42,0.16)"
+              : "0 14px 36px rgba(15,23,42,0.1)",
+        }}
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("a")) return;
+          onToggle();
+        }}
+        style={{
+          maxHeight: isExpanded ? `${expandedCardMaxHeight}px` : undefined,
+          maxWidth: `${cardMaxWidth}px`,
+        }}
+        transition={{ duration: 0.28, ease: "easeOut" }}
+      >
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
+              {item.tagline}
+            </p>
+            <h3 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
+              {item.heading}
+            </h3>
+            <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
+              {item.description}
+            </p>
+            <button
+              type="button"
+              aria-expanded={isExpanded}
+              onClick={(event) => { event.stopPropagation(); onToggle(); }}
+              className="inline-flex min-h-11 items-center gap-2 border-b border-current text-sm font-semibold text-slate-900 dark:text-white"
+            >{isExpanded ? "Hide details" : "Explore details"} <span aria-hidden="true">{isExpanded ? "−" : "+"}</span></button>
+          </div>
+
+          <AnimatePresence initial={false}>
+            {isExpanded ? (
+              <motion.div
+                animate={{ height: "auto", opacity: 1, marginTop: 0 }}
+                className="overflow-hidden"
+                exit={{ height: 0, opacity: 0, marginTop: -4 }}
+                initial={{ height: 0, opacity: 0, marginTop: -4 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+              >
+                <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
+                  <div className="space-y-5">
+                    <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      {item.details}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                        >
+                          <span className="max-w-full whitespace-normal break-words leading-tight">
+                            {skill}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                    {actionLinks.length > 0 ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {actionLinks.map((link) => (
+                          <a
+                            key={link.label}
+                            className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                            href={link.href}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                            }}
+                            rel={link.external ? "noopener noreferrer" : undefined}
+                            target={link.external ? "_blank" : undefined}
+                          >
+                            {link.label}
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+      </motion.article>
+    </motion.section>
+  );
+}
+
+function useMobileDimensions() {
+  const [dimensions, setDimensions] = useState({
+    width: 390,
+    height: 844,
+    isMobile: true,
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateDimensions = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const isMobile = width < 768;
+
+      setDimensions((current) => {
+        if (
+          current.width === width &&
+          current.height === height &&
+          current.isMobile === isMobile
+        ) {
+          return current;
+        }
+
+        return { width, height, isMobile };
+      });
+    };
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const debouncedResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateDimensions, 100);
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", debouncedResize, { passive: true });
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", debouncedResize);
+    };
+  }, []);
+
+  return dimensions;
+}
+
+export { WorkTimeline };
