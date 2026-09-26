@@ -1,8 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppleStyleDock } from "@/components/ui/demo";
-import { experiments, projects } from "@/data/projects";
+import { WorkTimeline } from "@/components/work/WorkTimeline";
+import { experiments } from "@/data/projects";
 
-export const metadata: Metadata = { title: "Work — Aditya Singh", description: "Selected software projects and professional experience from Aditya Singh: PebbleCode, Tuku, Epistemic Audit Engine, and more.", alternates: { canonical: "/work" }, openGraph: { title: "Work — Aditya Singh", description: "Projects, decisions, and public evidence from Addy's software work.", url: "/work" } };
+export const metadata: Metadata = {
+  title: "Work — Aditya Singh",
+  description: "Selected software projects and professional experience from Aditya Singh: PebbleCode, Tuku, Epistemic Audit Engine, and more.",
+  alternates: { canonical: "/work" },
+  openGraph: { title: "Work — Aditya Singh", description: "Projects, decisions, and public evidence from Addy's software work.", url: "/work" },
+};
 
-export default function WorkPage() { return <main id="main-content" className="portfolio-page"><div className="page-shell"><header className="eyebrow-row"><Link href="/home">← ADDY / HOME</Link><span>WORK / INDEX</span></header><section className="page-intro"><p className="eyebrow">SELECTED WORK</p><h1>Things I’ve built, and what I learned making them.</h1><p>Products and experiments at different stages. Each entry says what is public, what is a prototype, and where you can inspect the work.</p></section><section className="index-section" aria-labelledby="products-heading"><div className="section-index">01 / PRODUCTS & SYSTEMS</div><div><h2 id="products-heading">Selected projects</h2><div className="work-grid">{projects.map(project => <article className="work-card" key={project.slug}><div className="project-label">{project.kind} · {project.status}</div><h3><Link href={`/work/${project.slug}`}>{project.name} ↗</Link></h3><p>{project.summary}</p><p className="role-note">{project.role}</p><div className="stack-line">{project.stack.slice(0,4).join(" · ")}</div><div className="inline-links"><Link href={`/work/${project.slug}`}>Case study</Link><a href={project.source} target="_blank" rel="noopener noreferrer">Source ↗</a>{project.demo && <a href={project.demo} target="_blank" rel="noopener noreferrer">Live prototype ↗</a>}</div></article>)}</div></div></section><section className="index-section" aria-labelledby="experience-heading"><div className="section-index">02 / EXPERIENCE</div><div><h2 id="experience-heading">Professional experience</h2><div className="experience-list"><div><span>SEP 2026 — PRESENT</span><p><strong>American Express</strong> · Apprentice, Credit and Fraud Risk</p><small>Early in the role; learning and contributing to data, product, and workflow problems. Specific internal work is private.</small></div><div><span>2025</span><p><strong>National University of Singapore Global Immersion Programme</strong> · Team analytics project</p><small>Worked with a five-person team on Airbnb data preprocessing, analysis, and reporting with tools including Power BI and Orange ML.</small></div><div><span>DEC 2024 — JAN 2025</span><p><strong>Sukrit Technologies</strong> · Data Science Intern</p><small>Python and SQL cleaning and reporting work. No quantitative impact claim is made here.</small></div></div></div></section><section className="index-section" aria-labelledby="experiments-heading"><div className="section-index">03 / MORE EXPERIMENTS</div><div><h2 id="experiments-heading">Smaller investigations</h2><div className="experiment-list">{experiments.map(item => <article key={item.name}><div className="project-label">{item.status}</div><h3>{item.name}</h3><p>{item.summary}</p><a className="text-link" href={item.source} target="_blank" rel="noopener noreferrer">Inspect repository ↗</a></article>)}</div></div></section><footer className="contact-footer"><h2>Want to talk through a build?</h2><p>Send me a note about the problem, the people it serves, and what you want to make.</p><a className="button-primary" href="mailto:adityasingh0929@gmail.com">Email Addy ↗</a></footer></div><AppleStyleDock /></main>; }
+export default function WorkPage() {
+  return (
+    <main id="main-content" className="portfolio-page">
+      <div className="page-shell">
+        <header className="eyebrow-row"><Link href="/home">← ADDY / HOME</Link><span>WORK / INDEX</span></header>
+        <section className="page-intro work-intro">
+          <p className="eyebrow">SELECTED WORK</p>
+          <h1>Things I’ve built, and what I learned making them.</h1>
+          <p>Products and experience at different stages. Scroll through the work, open a card for its decisions, and follow the links for public evidence.</p>
+        </section>
+        <section className="timeline-section" aria-labelledby="timeline-heading">
+          <div className="timeline-section-heading"><span className="section-index">01 / THE JOURNEY</span><h2 id="timeline-heading">Work, one piece at a time.</h2><p>Hover a card or use its details button. Every project links to a fuller case study and source.</p></div>
+          <WorkTimeline />
+        </section>
+        <section className="index-section" aria-labelledby="experiments-heading">
+          <div className="section-index">02 / MORE EXPERIMENTS</div>
+          <div><h2 id="experiments-heading">Smaller investigations</h2><div className="experiment-list">{experiments.map(item => <article key={item.name}><div className="project-label">{item.status}</div><h3>{item.name}</h3><p>{item.summary}</p><a className="text-link" href={item.source} target="_blank" rel="noopener noreferrer">Inspect repository ↗</a></article>)}</div></div>
+        </section>
+        <footer className="contact-footer"><h2>Want to talk through a build?</h2><p>Send me a note about the problem, the people it serves, and what you want to make.</p><a className="button-primary" href="mailto:adityasingh0929@gmail.com">Email Addy ↗</a></footer>
+      </div>
+      <AppleStyleDock />
+    </main>
+  );
+}
