@@ -647,7 +647,7 @@ function MobileTimelineCardSection({
   const sectionMinHeight = Math.max(dimensions.height - 20, 640);
   const cardMaxWidth =
     dimensions.width < 480
-      ? Math.max(dimensions.width - 108, 248)
+      ? Math.max(dimensions.width - 108, 190)
       : Math.max(dimensions.width - 124, 292);
   const expandedCardMaxHeight = Math.max(dimensions.height - 220, 280);
 
