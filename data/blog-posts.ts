@@ -1,156 +1,40 @@
-export type BlogPost = {
-  slug: string;
-  title: string;
-  summary: string;
-  date: string;
-  readTime: string;
-  featured?: boolean;
-  tags: string[];
-  notes?: string[];
-  content: string[];
-};
+export type BlogPost = { slug: string; title: string; summary: string; date: string; readTime: string; featured?: boolean; tags: string[]; content: string[]; projectSlug?: string };
 
-export const blogPosts: BlogPost[] = [
-  {
-    slug: "designing-tuku-from-intent-to-execution",
-    title: "Designing Tuku: from intent to execution",
-    summary:
-      "Why coding agents need an execution layer that can interpret intent, preserve continuity, and keep humans in control.",
-    date: "March 2026",
-    readTime: "6 min read",
-    tags: ["Systems", "AI Systems", "Product Thinking"],
-    content: [
-      "Tuku starts from a simple product problem: human intent usually arrives incomplete, messy, and mixed with assumptions that agents cannot safely execute on their own.",
-      "I wanted an execution layer that could translate that intent into work that is structured, resumable, and inspectable without stripping the human out of the loop.",
-      "That means continuity matters as much as raw capability. Context has to survive handoffs, checkpoints need to be explicit, and the system has to preserve enough state for both agents and humans to re-enter cleanly.",
-      "The real goal is not to make agents feel autonomous. It is to make them reliable under supervision, easier to steer, and better at carrying work forward without losing the thread.",
-    ],
-  },
-  {
-    slug: "designing-a-recovery-first-coding-platform",
-    title: "Designing a Recovery-First Coding Platform",
-    summary:
-      "How PebbleCode was shaped around the loop of run, diagnose, recover, and rerun.",
-    date: "March 2026",
-    readTime: "8 min read",
-    featured: true,
-    tags: ["AI Systems", "Product Thinking", "Interfaces"],
-    notes: [
-      "feedback should lower the cost of trying again",
-      "a good learning tool should notice confusion before the user quits",
-    ],
-    content: [
-      "PebbleCode started with a simple observation: most coding tools are built around correctness, not recovery. They tell you whether something worked, but they do not do much to help you recover from the moment it breaks.",
-      "I wanted to build around a different loop. Run. Diagnose. Recover. Rerun. That loop feels closer to how people actually learn, especially when they are still building confidence.",
-      "Once that became the core product idea, the interface decisions got clearer. The AI mentor had to be contextual instead of generic. The IDE had to preserve state. The feedback system had to push the user one step forward instead of collapsing the whole problem into a single answer.",
-      "The product direction matters because the system design follows from it. Recovery-first design is not only a UX idea. It affects orchestration, prompts, analytics, and the way progression is modeled over time.",
-    ],
-  },
-  {
-    slug: "why-llm-products-need-better-failure-loops",
-    title: "Why LLM Products Need Better Failure Loops",
-    summary:
-      "Most AI products optimize for first-response quality and ignore what happens after the model is wrong.",
-    date: "February 2026",
-    readTime: "6 min read",
-    tags: ["LLM Engineering", "Product Thinking"],
-    content: [
-      "A lot of AI products still treat failure like an edge case. In practice, failure is part of the product. The question is not whether the model will be wrong. The question is what the system does next.",
-      "Good failure loops create structure after uncertainty. They give the user a way to inspect, retry, narrow, and recover instead of forcing them to restart from scratch.",
-      "That matters even more when the product is used for thinking work. A bad answer with no recovery path breaks trust. A debuggable answer can still be useful.",
-    ],
-  },
-  {
-    slug: "building-pebblecode-on-aws",
-    title: "Building PebbleCode on AWS",
-    summary:
-      "Notes on why the platform ended up serverless, where the architecture bends, and what I would simplify next.",
-    date: "February 2026",
-    readTime: "7 min read",
-    tags: ["Architecture", "Startups", "AI Systems"],
-    content: [
-      "PebbleCode runs on a serverless AWS stack because it matched the shape of the product early on: bursty usage, small surfaces, and a need to move quickly.",
-      "Cognito, API Gateway, Lambda, DynamoDB, and S3 let me build a full product loop without managing too much infrastructure overhead. That said, every convenience creates a different kind of complexity in observability and local debugging.",
-      "The tradeoff was acceptable because the product needed speed of iteration more than infrastructure purity. If the system grows in a certain direction, I will probably replace pieces of it later.",
-    ],
-  },
-  {
-    slug: "making-model-context-protocol-understandable",
-    title: "Making Model Context Protocol Understandable",
-    summary:
-      "What MCP Zero taught me about teaching a protocol through interfaces instead of documentation alone.",
-    date: "January 2026",
-    readTime: "5 min read",
-    tags: ["Interfaces", "Experiments", "LLM Engineering"],
-    content: [
-      "Protocols are usually explained in abstractions, but people learn them through behavior. MCP Zero came from that mismatch.",
-      "I wanted to make the protocol legible by turning concepts into flows. Instead of reading about clients, tools, and servers in isolation, users could see how the pieces talked to each other.",
-      "The interesting part was not the visual layer itself. It was the realization that better interfaces can compress a lot of conceptual overhead.",
-    ],
-  },
-  {
-    slug: "building-an-epistemic-audit-engine",
-    title: "Building an Epistemic Audit Engine",
-    summary:
-      "A notebook entry on claim extraction, verification middleware, and why confidence scores need structure behind them.",
-    date: "December 2025",
-    readTime: "7 min read",
-    tags: ["AI Systems", "LLM Engineering", "Architecture"],
-    content: [
-      "The Epistemic Audit Engine came from frustration with how loosely reliability is discussed in AI systems. Confidence without structure is not enough.",
-      "The core idea was to decompose generated text into atomic claims, evaluate them against evidence, and produce verdicts that could be used downstream.",
-      "That pushed the system toward middleware thinking. Verification became an operational layer between generation and consumption, not just an offline benchmark.",
-    ],
-  },
-  {
-    slug: "what-hackathons-taught-me-about-shipping-ai-products",
-    title: "What Hackathons Taught Me About Shipping AI Products",
-    summary:
-      "Fast constraints, rough prototypes, and the difference between a cool demo and a durable product idea.",
-    date: "November 2025",
-    readTime: "4 min read",
-    tags: ["Startups", "Experiments", "Product Thinking"],
-    content: [
-      "Hackathons are useful because they collapse decision-making. You find out quickly what matters, what breaks, and what was just performance.",
-      "The best lesson is that shipping fast is not the same thing as thinking clearly. The teams that stand out usually have a much sharper model of the user problem than the teams with the most flashy demos.",
-      "I keep returning to hackathon projects because they are compressed versions of real product decisions. They expose taste.",
-    ],
-  },
+const drafts: Omit<BlogPost, "readTime">[] = [
+  { slug: "designing-a-recovery-first-coding-platform", title: "Building around the failed run", summary: "A closer look at PebbleCode’s run, inspect, ask, fix, rerun loop.", date: "Undated build note", featured: true, tags: ["PebbleCode", "Product design"], projectSlug: "pebblecode", content: [
+    "A coding practice tool can say whether a submission passed. The harder question is what a learner should do after it fails. PebbleCode began with that second question. I wanted the failure to become a useful next action rather than a reason to leave the session.",
+    "The product surface keeps an editor, run feedback, and Pebble Coach close together. A learner can write a solution in the Monaco-based workspace, run it, inspect the result, and ask for a hint or explanation without leaving the attempt. The public demo shows this sequence; its landing page also illustrates a failing Two Sum case and a prompt to inspect the complement logic.",
+    "The design choice is to preserve the attempt. A generic answer that reveals the complete solution might end the session quickly, but it also skips the useful work of diagnosing an edge case. Hint, explanation, and next-step modes let the learner request a different amount of help. In the repository, the coach and runner have local API paths and optional AWS-backed integrations; they should not be described as universally available in the hosted frontend without testing its configuration.",
+    "There is a systems cost to this interface decision. Guidance needs the current code and the latest run result to be relevant. The frontend, execution path, and coach must agree on which attempt they are discussing. If any part is missing, a calm error and a recoverable next step matter more than an impressive but ungrounded reply.",
+    "The repository contains a problem browser, session workspace, coach, and insights surface. That is evidence of a product prototype, not evidence that it improves learning outcomes. The next experiment I would run is small: give learners a failing case, compare layered hints with immediate answers, and watch whether they can make the next edit on their own."
+  ] },
+  { slug: "designing-tuku-from-intent-to-execution", title: "Who owns the state when an agent hands off?", summary: "Tuku’s answer is a local task record, bounded workers, and explicit evidence.", date: "Undated build note", tags: ["Tuku", "Developer tools"], projectSlug: "tuku", content: [
+    "A long coding task rarely arrives as a perfect instruction. It starts with intent, gains constraints, moves through a worker, and can stop halfway through. If the only durable record is a transcript or a confident final message, it is hard to know what actually happened and where to resume.",
+    "Tuku is a local-first Go CLI and daemon backed by SQLite. Its public README describes task, intent, brief, checkpoint, run, and proof state. The CLI exposes commands such as start, message, run, checkpoint, continue, status, and inspect. The daemon and CLI communicate over a Unix socket; the core runtime does not require a cloud service.",
+    "The important boundary is ownership. A worker can execute a bounded action and return a transcript, but Tuku owns the operator-facing task state. Handoff records, follow-up receipts, incident progression, and risk projections give a person a way to inspect the continuation rather than accepting a worker's claim as closure.",
+    "This creates a tradeoff: more explicit state means more concepts to maintain. I prefer that cost to a hidden policy engine that silently turns advisory evidence into hard authority. Tuku's README calls out this distinction and limits the current version to local runtime and CLI foundations. It does not claim a broad web UI or an external user base.",
+    "What I would test next is an ordinary task that fails mid-run: checkpoint it, hand it to another worker, inspect the evidence, then recover. A short recording of that sequence would make the design easier to judge than another list of capabilities."
+  ] },
+  { slug: "building-an-epistemic-audit-engine", title: "A confidence score needs a trail", summary: "A claim-level audit prototype and the cases it must leave unresolved.", date: "Undated build note", tags: ["AI reliability", "Verification"], projectSlug: "epistemic-audit-engine", content: [
+    "Long generated answers can contain a mix of supported, contradicted, and unverified statements. An overall score alone makes it difficult to locate the problem. Epistemic Audit Engine explores a more inspectable unit: the individual claim.",
+    "The public FastAPI service accepts text at an audit endpoint. Its pipeline extracts claims, links entities, retrieves evidence, verifies each claim, and aggregates risk. A Next.js interface displays the output for manual inspection. The repository also includes health endpoints, append-only JSONL audit logs, and an evaluation harness.",
+    "The interesting design question is what happens when evidence is thin. A retriever can return a nearby passage that does not support the exact statement. A score can look reassuring when there is only one unresolved claim. The risk aggregator has a specific small-sample safeguard: a refuted claim remains high risk, and unresolved small samples stay at least moderate. That is an implementation choice visible in the code, not a measured guarantee of correctness.",
+    "The output is most useful when someone can read the claim, verdict, and evidence together. That also makes errors discoverable: the extractor may split a sentence poorly, entity linking may choose the wrong subject, or retrieved text may be only context. The interface is an inspection tool as much as a potential middleware surface.",
+    "I would not call this production verification without a documented evaluation set, calibration, and error analysis. The next step is to measure false support and false refutation on representative claims, then publish the failures as carefully as the successes."
+  ] },
+  { slug: "why-llm-products-need-better-failure-loops", title: "A short note on AI failure loops", summary: "What should happen after a model gives the wrong answer?", date: "Undated short note", tags: ["Product thinking"], content: ["A wrong answer is part of using an AI product, so the recovery path belongs in the product design. A person should be able to inspect what the system used, narrow the question, retry with context, and understand what changed. I keep returning to this idea while building tools like PebbleCode and Epistemic Audit Engine. It is a design direction, not a claim that those products have solved trust."] },
+  { slug: "building-pebblecode-on-aws", title: "PebbleCode’s optional AWS paths", summary: "A short architecture note on local routes and cloud integrations in the repository.", date: "Undated short note", tags: ["PebbleCode", "Architecture"], projectSlug: "pebblecode", content: ["The PebbleCode repository contains a Vite frontend, local API routes, AWS CDK infrastructure, and optional integrations with Cognito, Lambda, DynamoDB, S3, and Bedrock. Its README explains that local runner and coach paths can be used during development while cloud-backed features require configuration. That distinction matters: the existence of an infrastructure module is not proof that every path is active in the public demo. The practical next step is a deployment map showing which frontend actions reach which service and what fallback a visitor sees when an integration is unavailable."] },
+  { slug: "making-model-context-protocol-understandable", title: "A note on explaining protocols", summary: "A product idea for making tool interactions easier to see.", date: "Undated concept note", tags: ["Interfaces", "Concept"], content: ["MCP Zero is an interface idea for making protocol concepts visible through a flow rather than a glossary. A useful version would show a host, a server, available tools, and a request moving between them. This note records the direction only. A working public demo and repository evidence are still needed before it belongs among the featured builds."] },
+  { slug: "what-hackathons-taught-me-about-shipping-ai-products", title: "A short note on prototype constraints", summary: "Why a demo should expose the core user problem quickly.", date: "Undated short note", tags: ["Experiments"], content: ["A short deadline forces a prototype to reveal its central interaction. The useful question is whether someone can understand the problem and try the core loop, even when much of the surrounding product is unfinished. I want to document specific examples from my own hackathons before turning this thought into a longer essay."] }
 ];
 
-export const blogTopics = [
-  "AI Systems",
-  "LLM Engineering",
-  "Product Thinking",
-  "Experiments",
-  "Architecture",
-  "Startups",
-  "Interfaces",
-];
-
+export const blogPosts: BlogPost[] = drafts.map(post => ({...post, readTime: `${Math.max(1, Math.ceil((post.title + " " + post.summary + " " + post.content.join(" ")).trim().split(/\s+/).length / 200))} min read` }));
+export const blogTopics = ["AI systems", "Developer tools", "Product thinking", "Architecture", "Experiments"];
 export const shortNotes = [
-  {
-    title: "Systems get interesting at the handoff points.",
-    body: "Most product quality is decided where one layer trusts another layer too early.",
-  },
-  {
-    title: "The right abstraction often feels obvious only after the interface exists.",
-    body: "A lot of product thinking is really interface research in disguise.",
-  },
-  {
-    title: "I trust metrics more when they change what the product does next.",
-    body: "Instrumentation is most useful when it feeds the next decision instead of becoming decoration.",
-  },
+  { title: "Keep the failed attempt visible.", body: "It often carries the context needed for the next useful hint." },
+  { title: "Ask who owns task state.", body: "A worker transcript should help inspect a handoff, not become its only record." },
+  { title: "Show the uncertain claim.", body: "A risk label is easier to trust when the evidence and its limits are visible." }
 ];
-
-export function getFeaturedPost() {
-  return blogPosts.find((post) => post.featured) ?? blogPosts[0];
-}
-
-export function getNonFeaturedPosts() {
-  return blogPosts.filter((post) => !post.featured);
-}
-
-export function getPostBySlug(slug: string) {
-  return blogPosts.find((post) => post.slug === slug);
-}
+export function getFeaturedPost() { return blogPosts.find(post => post.featured) ?? blogPosts[0]; }
+export function getNonFeaturedPosts() { return blogPosts.filter(post => !post.featured); }
+export function getPostBySlug(slug: string) { return blogPosts.find(post => post.slug === slug); }

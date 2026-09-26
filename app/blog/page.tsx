@@ -1,8 +1,8 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { HomeDock } from "@/components/AppBar";
 import { SquarePenIcon } from "@/components/icons/square-pen-icon";
-import TwitterXIcon from "@/components/icons/twitter-x-icon";
 import { PixelFrame } from "@/components/ui/pixel-frame";
 import {
   blogTopics,
@@ -11,14 +11,14 @@ import {
   shortNotes,
 } from "@/data/blog-posts";
 
-const xUrl = "https://x.com/addyvantage";
+export const metadata: Metadata = { title: "Writing — Aditya Singh", description: "Build notes on PebbleCode, Tuku, and claim-level AI verification from Aditya Singh.", alternates: {canonical: "/blog"}, openGraph: {title: "Writing — Aditya Singh", description: "Specific notes from software projects and experiments.", url: "/blog"} };
 
 export default function BlogPage() {
   const featuredPost = getFeaturedPost();
   const posts = getNonFeaturedPosts();
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-white text-slate-900 dark:bg-neutral-950 dark:text-white">
+    <main id="main-content" className="relative min-h-screen overflow-x-hidden bg-white text-slate-900 dark:bg-neutral-950 dark:text-white">
       <HomeDock />
 
       <section className="mx-auto w-full max-w-5xl px-5 pb-6 pt-16 sm:px-6 sm:pt-20 md:px-8 md:pt-24 lg:px-10">
@@ -171,26 +171,7 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <section
-        aria-label="Blog closing CTA"
-        className="mx-auto mt-16 w-full max-w-5xl px-5 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-6 md:mt-20 md:px-8 lg:px-10"
-      >
-        <div className="flex flex-col items-center justify-center gap-4 text-center md:pl-0">
-          <span className="h-1 w-14 rounded-full bg-black/75 dark:bg-white/80" />
-          <div className="flex items-center justify-center gap-2 text-[1.28rem] leading-tight text-neutral-700 dark:text-neutral-300 sm:text-[1.4rem] md:text-[1.58rem]">
-            <span>Want to discuss any of these ideas? Say hi on</span>
-            <Link
-              aria-label="Say hi on X"
-              className="inline-flex translate-y-[1px] items-center text-neutral-950 transition-colors hover:text-neutral-600 dark:text-white dark:hover:text-neutral-300"
-              href={xUrl}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <TwitterXIcon loop size={28} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      <footer className="contact-footer mx-auto max-w-5xl px-5"><h2>Continue the conversation.</h2><a className="button-primary" href="mailto:adityasingh0929@gmail.com">Email Addy ↗</a></footer>
     </main>
   );
 }
