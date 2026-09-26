@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -13,6 +14,13 @@ export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
 }
 
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPostBySlug(slug);
+  if (!post) return {};
+  return { title: `${post.title} — Aditya Singh`, description: post.summary, alternates: { canonical: `/blog/${slug}` }, openGraph: { title: post.title, description: post.summary, url: `/blog/${slug}` } };
+}
+
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
@@ -22,7 +30,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-white text-slate-900 dark:bg-neutral-950 dark:text-white">
+    <main id="main-content" className="relative min-h-screen overflow-x-hidden bg-white text-slate-900 dark:bg-neutral-950 dark:text-white">
       <HomeDock />
 
       <article className="mx-auto w-full max-w-4xl px-5 pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-16 sm:px-6 sm:pt-20 md:px-8 md:pt-24 lg:px-10">
@@ -61,6 +69,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {post.content.map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
+          {post.projectSlug && <p className="border-t border-neutral-300 pt-6 dark:border-neutral-700"><Link className="text-link" href={`/work/${post.projectSlug}`}>Explore the project and source ↗</Link></p>}
         </div>
       </article>
     </main>

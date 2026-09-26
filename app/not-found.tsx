@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { AppleStyleDock } from "@/components/ui/demo";
+export default function NotFound() { return <main id="main-content" className="portfolio-page"><div className="page-shell"><header className="eyebrow-row"><Link href="/home">← ADDY / HOME</Link><span>404</span></header><section className="page-intro"><p className="eyebrow">LOST A TAB?</p><h1>This page isn’t here.</h1><p>Head back to the work index or start at the homepage.</p><div className="action-row"><Link className="button-primary" href="/home">Go home ↗</Link><Link className="button-secondary" href="/work">Browse work ↗</Link></div></section></div><AppleStyleDock /></main>; }
