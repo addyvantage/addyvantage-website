@@ -1,7 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+import { Arrow } from "@/components/arrow";
 
 import type { WorkTimelineItem } from "@/components/work/work-data";
 
@@ -81,9 +84,10 @@ function WorkTimelineCard({
     [isExpanded, isRight]
   );
   const actionLinks = [
-    item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
-    item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
+    item.githubUrl ? { href: item.githubUrl, label: "Source" } : null,
+    item.liveUrl ? { href: item.liveUrl, label: item.liveLabel ?? "Live prototype" } : null,
   ].filter((link): link is { href: string; label: string } => link !== null);
+  const canInteract = isActive && !isTransitioning;
 
   return (
     <div
@@ -95,7 +99,6 @@ function WorkTimelineCard({
         <div className={shellClasses}>
           <motion.article
             ref={shellRef}
-            aria-expanded={isActive && isExpanded}
             animate={{
               boxShadow: isExpanded
                 ? "0 28px 80px rgba(15,23,42,0.14)"
@@ -108,6 +111,13 @@ function WorkTimelineCard({
                 : "border-slate-900/18 dark:border-white/18"
             }`}
             initial={false}
+            onFocus={() => {
+              // Keyboard path: focusing anything in the card reveals its details and links.
+              if (canInteract) setIsExpanded(true);
+            }}
+            onBlur={(event) => {
+              if (!shellRef.current?.contains(event.relatedTarget as Node | null)) setIsExpanded(false);
+            }}
             onClick={() => {
               if (!isActive || isTransitioning || canHover) return;
               setIsExpanded((current) => !current);
@@ -142,19 +152,34 @@ function WorkTimelineCard({
             />
             <div className="relative space-y-4 md:space-y-5">
               <div className="space-y-3 md:space-y-2.5">
-                <p className="text-[0.98rem] font-semibold uppercase tracking-[0.28em] text-neutral-600 dark:text-neutral-200 md:text-[1.08rem]">
+                <p className="font-mono text-[0.75rem] uppercase leading-snug tracking-[0.06em] text-neutral-600 dark:text-neutral-400">
                   {item.tagline}
                 </p>
-                <h2 className="text-[1.85rem] font-semibold leading-tight text-slate-900 dark:text-white md:text-[2.3rem]">
+                <h2 className="text-[2rem] leading-[1.05] tracking-[-0.02em] text-slate-900 dark:text-white md:text-[2.5rem]">
                   {item.heading}
                 </h2>
                 <p
-                  className={`text-[1rem] leading-relaxed text-neutral-700 dark:text-neutral-300 md:text-[1.08rem] ${
+                  className={`text-[1rem] leading-relaxed text-neutral-700 dark:text-neutral-300 md:text-[1.0625rem] ${
                     isExpanded ? "max-w-[56ch] md:max-w-[62ch]" : "max-w-[42ch]"
                   }`}
                 >
                   {item.description}
                 </p>
+                <button
+                  aria-controls={`${item.id}-details`}
+                  aria-expanded={isExpanded}
+                  className="inline-flex min-h-[32px] items-center gap-2 font-mono text-[0.75rem] uppercase tracking-[0.06em] text-neutral-500 transition-colors hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (!canInteract) return;
+                    setIsExpanded((current) => (canHover ? true : !current));
+                  }}
+                  tabIndex={isActive ? 0 : -1}
+                  type="button"
+                >
+                  <span aria-hidden="true" className={`text-[0.95rem] leading-none transition-transform duration-200 ${isExpanded ? "rotate-45" : ""}`}>+</span>
+                  {isExpanded && !canHover ? "Less" : "Details"}
+                </button>
               </div>
 
               <AnimatePresence initial={false}>
@@ -162,20 +187,33 @@ function WorkTimelineCard({
                   <motion.div
                     animate={{ height: "auto", opacity: 1, marginTop: 0 }}
                     className="overflow-hidden"
+                    id={`${item.id}-details`}
                     exit={{ height: 0, opacity: 0, marginTop: -4 }}
                     initial={{ height: 0, opacity: 0, marginTop: -4 }}
                     transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <div className="border-t border-slate-900/10 pt-4 dark:border-white/10 md:pt-5">
                       <div className="space-y-5">
-                        <p className="max-w-[72ch] text-[1.04rem] leading-relaxed text-neutral-600 dark:text-neutral-400 md:text-[1.12rem]">
-                          {item.details}
-                        </p>
+                        {item.details ? (
+                          <p className="max-w-[62ch] text-[0.975rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                            {item.details}
+                          </p>
+                        ) : null}
+                        {item.facts ? (
+                          <dl className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-4 gap-y-2.5">
+                            {item.facts.map((fact) => (
+                              <div key={fact.label} className="contents">
+                                <dt className="pt-[0.2rem] font-mono text-[0.72rem] uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-500">{fact.label}</dt>
+                                <dd className="text-[0.95rem] leading-relaxed text-neutral-700 dark:text-neutral-300">{fact.text}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        ) : null}
                         <div className="flex max-w-full flex-wrap gap-1.5 overflow-hidden">
                           {item.skills.map((skill) => (
                             <span
                               key={skill}
-                              className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.74rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                              className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 font-mono text-[0.7rem] uppercase tracking-[0.06em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
                             >
                               <span className="max-w-full whitespace-normal break-words leading-tight">
                                 {skill}
@@ -183,17 +221,22 @@ function WorkTimelineCard({
                             </span>
                           ))}
                         </div>
-                        {actionLinks.length > 0 ? (
+                        {item.caseStudyUrl || actionLinks.length > 0 ? (
                           <div className="flex flex-wrap items-center gap-2">
+                            {item.caseStudyUrl ? (
+                              <Link className={cardLinkClass} href={item.caseStudyUrl}>
+                                Case study <Arrow />
+                              </Link>
+                            ) : null}
                             {actionLinks.map((link) => (
                               <a
                                 key={link.label}
-                                className="inline-flex items-center rounded-full border border-slate-900/12 px-3.5 py-2 text-[0.9rem] font-medium uppercase tracking-[0.22em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                                className={cardLinkClass}
                                 href={link.href}
                                 rel="noopener noreferrer"
                                 target="_blank"
                               >
-                                {link.label}
+                                {link.label} <Arrow dir="up-right" />
                               </a>
                             ))}
                           </div>
@@ -210,5 +253,8 @@ function WorkTimelineCard({
     </div>
   );
 }
+
+const cardLinkClass =
+  "inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-slate-900/12 px-3.5 text-[0.875rem] font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black";
 
 export { WorkTimelineCard };

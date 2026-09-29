@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { HomeDock } from "@/components/AppBar";
-import { PixelFrame } from "@/components/ui/pixel-frame";
+import { Arrow } from "@/components/arrow";
+import { AppleStyleDock } from "@/components/ui/demo";
 import { blogPosts, getPostBySlug } from "@/data/blog-posts";
+import { getProject } from "@/data/projects";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
-  return { title: `${post.title} — Aditya Singh`, description: post.summary, alternates: { canonical: `/blog/${slug}` }, openGraph: { title: post.title, description: post.summary, url: `/blog/${slug}` } };
+  return { title: post.title, description: post.summary, alternates: { canonical: `/blog/${slug}` }, openGraph: { type: "article", title: post.title, description: post.summary, url: `/blog/${slug}`, images: ["/opengraph-image"] } };
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
@@ -29,49 +30,30 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  return (
-    <main id="main-content" className="relative min-h-screen overflow-x-hidden bg-white text-slate-900 dark:bg-neutral-950 dark:text-white">
-      <HomeDock />
+  const project = post.projectSlug ? getProject(post.projectSlug) : undefined;
 
-      <article className="mx-auto w-full max-w-4xl px-5 pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-16 sm:px-6 sm:pt-20 md:px-8 md:pt-24 lg:px-10">
-        <div className="max-w-2xl md:pl-28">
-          <Link
-            className="text-[0.84rem] uppercase tracking-[0.22em] text-neutral-500 transition-colors hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300"
-            href="/blog"
-          >
-            Back to writing
-          </Link>
-          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.84rem] uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
-            <span>{post.date}</span>
-            <span className="h-1 w-1 rounded-full bg-neutral-400 dark:bg-neutral-600" />
-            <span>{post.readTime}</span>
+  return (
+    <main id="main-content" className="portfolio-page">
+      <div className="page-shell">
+        <header className="eyebrow-row label"><Link className="inline-flex items-center gap-2" href="/blog"><Arrow dir="left" /> Writing</Link><span>{post.date} · {post.readTime}</span></header>
+        <article>
+          <div className="page-intro">
+            <p className="eyebrow">{post.tags.join(" · ")}</p>
+            <h1>{post.title}</h1>
+            <p>{post.summary}</p>
           </div>
-          <h1 className="mt-4 text-[2.1rem] font-semibold leading-tight tracking-tight text-black dark:text-white sm:text-[2.5rem] md:text-[3rem]">
-            {post.title}
-          </h1>
-          <p className="mt-4 text-[1.06rem] leading-relaxed text-neutral-600 dark:text-neutral-400 md:text-[1.18rem]">
-            {post.summary}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <span
-                key={tag}
-                className="pixel-capsule min-h-[29px] px-2.5 py-0 text-[0.75rem] uppercase tracking-[0.14em] text-slate-500 dark:text-neutral-400"
-              >
-                <PixelFrame variant="capsule" />
-                <span className="pixel-capsule-label">{tag}</span>
-              </span>
+          <div className="prose">
+            {post.content.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-        </div>
-
-        <div className="mt-12 max-w-2xl space-y-5 text-[1.05rem] leading-[1.75] text-neutral-700 dark:text-neutral-300 md:mt-14 md:pl-28 md:text-[1.14rem]">
-          {post.content.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-          {post.projectSlug && <p className="border-t border-neutral-300 pt-6 dark:border-neutral-700"><Link className="text-link" href={`/work/${post.projectSlug}`}>Explore the project and source ↗</Link></p>}
-        </div>
-      </article>
+          <div className="case-end">
+            {project ? <Link className="text-link" href={`/work/${project.slug}`}>{project.name}: case study and source <Arrow /></Link> : <Link className="text-link" href="/blog"><Arrow dir="left" /> All notes</Link>}
+            <a className="text-link" href="mailto:build@addyvantage.me">Reply by email <Arrow dir="up-right" /></a>
+          </div>
+        </article>
+      </div>
+      <AppleStyleDock />
     </main>
   );
 }

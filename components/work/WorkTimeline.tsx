@@ -3,9 +3,11 @@
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { Observer } from "gsap/Observer";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import Link from "next/link";
+
+import { Arrow } from "@/components/arrow";
 import { WorkTimelineCard } from "@/components/work/WorkTimelineCard";
 import { workTimelineData, type WorkTimelineItem } from "@/components/work/work-data";
 
@@ -22,6 +24,7 @@ function WorkTimeline() {
     null
   );
   const goToIndexRef = useRef<(index: number) => void>(() => {});
+  const removeKeyListenerRef = useRef<() => void>(() => {});
   const currentIndexRef = useRef(0);
   const animatingRef = useRef(false);
   const observerEnabledRef = useRef(false);
@@ -51,7 +54,8 @@ function WorkTimeline() {
 
     const section = sectionRef.current;
     const stage = stageRef.current;
-    gsap.registerPlugin(ScrollTrigger, Observer);
+    // ScrollTrigger.observe() is GSAP's Observer, bundled with ScrollTrigger.
+    gsap.registerPlugin(ScrollTrigger);
 
     const panels = panelRefs.current.filter(
       (panel): panel is HTMLDivElement => panel !== null
@@ -64,6 +68,7 @@ function WorkTimeline() {
     const clampIndex = (value: number) =>
       Math.max(0, Math.min(value, lastIndex));
     const boundaryOffset = 24;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ctx = gsap.context(() => {
       const enableObserver = () => {
@@ -217,7 +222,7 @@ function WorkTimeline() {
         transitionRef.current = gsap
           .timeline({
             defaults: {
-              duration: 0.72,
+              duration: reduceMotion ? 0.01 : 0.72,
               ease: "power2.out",
               overwrite: "auto",
             },
@@ -251,7 +256,7 @@ function WorkTimeline() {
               scale: 1,
               filter: "blur(0px)",
             },
-            0.12
+            reduceMotion ? 0 : 0.12
           );
       };
 
@@ -307,6 +312,23 @@ function WorkTimeline() {
         },
       });
 
+      // Keys step slides the same way the wheel does, so keyboard scrolling never skips content.
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (!sectionActiveRef.current || event.altKey || event.ctrlKey || event.metaKey) return;
+        const target = event.target as HTMLElement;
+        if (target.closest("input, textarea, select, [contenteditable]")) return;
+        const isSpace = event.key === " ";
+        if (isSpace && target.closest("button, a")) return;
+        const forward = event.key === "ArrowDown" || event.key === "PageDown" || (isSpace && !event.shiftKey);
+        const backward = event.key === "ArrowUp" || event.key === "PageUp" || (isSpace && event.shiftKey);
+        if (!forward && !backward) return;
+        event.preventDefault();
+        const direction = forward ? 1 : -1;
+        transitionToIndex(currentIndexRef.current + direction, direction);
+      };
+      window.addEventListener("keydown", onKeyDown);
+      removeKeyListenerRef.current = () => window.removeEventListener("keydown", onKeyDown);
+
       goToIndexRef.current = (index: number) => {
         if (animatingRef.current) return;
 
@@ -325,6 +347,7 @@ function WorkTimeline() {
     }, section);
 
     return () => {
+      removeKeyListenerRef.current();
       transitionRef.current?.kill();
       transitionRef.current = null;
       goToIndexRef.current = () => {};
@@ -356,6 +379,12 @@ function WorkTimeline() {
         ref={stageRef}
         className="relative flex h-screen items-center overflow-hidden bg-white dark:bg-neutral-950"
       >
+        <div className="pointer-events-none absolute bottom-8 left-8 z-20 font-mono text-[0.75rem] uppercase tracking-[0.06em] text-neutral-500 lg:left-14">
+          <p aria-live="polite" className="text-slate-900 dark:text-white">
+            Work · {String(activeIndex + 1).padStart(2, "0")} / {String(workTimelineData.length).padStart(2, "0")}
+          </p>
+          <p className="mt-1">Scroll, or use ↑ ↓ keys</p>
+        </div>
         <div className="pointer-events-none absolute left-[60px] top-[18%] z-20 h-[64%] w-0 md:left-1/2">
           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-300/90 dark:bg-white/12" />
           <div
@@ -382,7 +411,7 @@ function WorkTimeline() {
                     key={`${item.id}-active`}
                     type="button"
                     onClick={() => goToIndexRef.current(index)}
-                    className="pointer-events-auto relative whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[1.16rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
+                    className="pointer-events-auto relative whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-1.5 font-display text-[1.16rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
                     aria-label={`Show ${item.heading}`}
                   >
                     {item.dateLabel}
@@ -392,7 +421,7 @@ function WorkTimeline() {
                     key={`${item.id}-inactive`}
                     type="button"
                     onClick={() => goToIndexRef.current(index)}
-                    className={`pointer-events-auto relative block h-4 w-4 rounded-full border transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    className={`pointer-events-auto relative block h-4 w-4 rounded-full border before:absolute before:-inset-2 before:content-[''] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                       isComplete
                         ? "border-slate-900 bg-slate-900 shadow-[0_0_16px_rgba(15,23,42,0.18)] dark:border-white dark:bg-white dark:shadow-[0_0_18px_rgba(255,255,255,0.24)]"
                         : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-900"
@@ -447,9 +476,10 @@ function MobileWorkTimeline() {
     const section = sectionRefs.current[index];
     if (!section || typeof window === "undefined") return;
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({
       top: section.offsetTop,
-      behavior: "smooth",
+      behavior: reduceMotion ? "auto" : "smooth",
     });
   };
 
@@ -549,9 +579,10 @@ function MobileTimelineDot({
       {isCurrent ? (
         <motion.button
           type="button"
-          className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
+          className="absolute right-5 top-0 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-300 bg-white px-2.5 py-1.5 font-display text-[0.92rem] text-slate-900 shadow-sm dark:border-white/20 dark:bg-neutral-950 dark:text-white dark:shadow-none"
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
+          aria-label={`Show ${item.heading}`}
           onClick={() => onDotClick(index)}
         >
           {item.dateLabel}
@@ -559,7 +590,7 @@ function MobileTimelineDot({
       ) : null}
       <motion.button
         type="button"
-        className={`absolute right-0 top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border ${
+        className={`absolute right-0 top-0 h-3.5 w-3.5 -translate-y-1/2 rounded-full border before:absolute before:-inset-3 before:content-[''] ${
           isComplete
             ? "border-slate-900 bg-slate-900 dark:border-white dark:bg-white"
             : "border-slate-300 bg-white dark:border-white/20 dark:bg-neutral-950"
@@ -570,7 +601,9 @@ function MobileTimelineDot({
             : "0 0 0 rgba(255,255,255,0)",
           scale: isCurrent ? 1.22 : isComplete ? 1.04 : 1,
         }}
+        aria-label={`Show ${item.heading}`}
         onClick={() => onDotClick(index)}
+        tabIndex={isCurrent ? -1 : 0}
         transition={{ duration: 0.24, ease: "easeOut" }}
       />
     </div>
@@ -599,8 +632,8 @@ function MobileTimelineCardSection({
   const localRef = useRef<HTMLElement | null>(null);
   const inView = useInView(localRef, { amount: 0.58 });
   const actionLinks = [
-    item.liveUrl ? { href: item.liveUrl, label: "Live Site" } : null,
-    item.githubUrl ? { href: item.githubUrl, label: "GitHub" } : null,
+    item.githubUrl ? { href: item.githubUrl, label: "Source" } : null,
+    item.liveUrl ? { href: item.liveUrl, label: item.liveLabel ?? "Live prototype" } : null,
   ].filter((link): link is { href: string; label: string } => link !== null);
   const sectionMinHeight = Math.max(dimensions.height - 20, 640);
   const cardMaxWidth =
@@ -635,7 +668,6 @@ function MobileTimelineCardSection({
         className={`w-full cursor-pointer overflow-hidden rounded-[26px] border border-slate-900/24 bg-white/96 px-5 py-6 text-left shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-md transition-all duration-300 dark:border-white/24 dark:bg-black/92 dark:shadow-[0_0_40px_rgba(255,255,255,0.05)] sm:px-6 ${
           isExpanded ? "overflow-y-auto overscroll-contain" : ""
         }`}
-        aria-expanded={isExpanded}
         animate={{
           boxShadow: isExpanded
             ? "0 0 34px rgba(255,255,255,0.10)"
@@ -647,30 +679,36 @@ function MobileTimelineCardSection({
           if ((event.target as HTMLElement).closest("a")) return;
           onToggle();
         }}
-        onKeyDown={(event) => {
-          if (event.key !== "Enter" && event.key !== " ") return;
-          event.preventDefault();
-          onToggle();
-        }}
-        role="button"
         style={{
           maxHeight: isExpanded ? `${expandedCardMaxHeight}px` : undefined,
           maxWidth: `${cardMaxWidth}px`,
         }}
-        tabIndex={0}
         transition={{ duration: 0.28, ease: "easeOut" }}
       >
         <div className="space-y-4">
           <div className="space-y-3">
-            <p className="text-[0.88rem] font-semibold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-200">
+            <p className="font-mono text-[0.72rem] uppercase leading-snug tracking-[0.06em] text-neutral-600 dark:text-neutral-400">
               {item.tagline}
             </p>
-            <h2 className="text-[1.66rem] font-semibold leading-tight text-slate-900 dark:text-white">
+            <h2 className="text-[1.75rem] leading-[1.05] tracking-[-0.02em] text-slate-900 dark:text-white">
               {item.heading}
             </h2>
             <p className="text-[0.98rem] leading-relaxed text-neutral-700 dark:text-neutral-300">
               {item.description}
             </p>
+            <button
+              aria-controls={`${item.id}-details-mobile`}
+              aria-expanded={isExpanded}
+              className="inline-flex min-h-[44px] items-center gap-2 font-mono text-[0.75rem] uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-400"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggle();
+              }}
+              type="button"
+            >
+              <span aria-hidden="true" className={`text-[0.95rem] leading-none transition-transform duration-200 ${isExpanded ? "rotate-45" : ""}`}>+</span>
+              {isExpanded ? "Less" : "Details"}
+            </button>
           </div>
 
           <AnimatePresence initial={false}>
@@ -679,19 +717,32 @@ function MobileTimelineCardSection({
                 animate={{ height: "auto", opacity: 1, marginTop: 0 }}
                 className="overflow-hidden"
                 exit={{ height: 0, opacity: 0, marginTop: -4 }}
+                id={`${item.id}-details-mobile`}
                 initial={{ height: 0, opacity: 0, marginTop: -4 }}
                 transition={{ duration: 0.24, ease: "easeOut" }}
               >
                 <div className="border-t border-slate-900/10 pt-4 dark:border-white/10">
                   <div className="space-y-5">
-                    <p className="text-[0.96rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
-                      {item.details}
-                    </p>
+                    {item.details ? (
+                      <p className="text-[0.95rem] leading-relaxed text-neutral-600 dark:text-neutral-400">
+                        {item.details}
+                      </p>
+                    ) : null}
+                    {item.facts ? (
+                      <dl className="space-y-3">
+                        {item.facts.map((fact) => (
+                          <div key={fact.label}>
+                            <dt className="font-mono text-[0.7rem] uppercase tracking-[0.06em] text-neutral-500">{fact.label}</dt>
+                            <dd className="mt-0.5 text-[0.93rem] leading-relaxed text-neutral-700 dark:text-neutral-300">{fact.text}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ) : null}
                     <div className="flex flex-wrap gap-1.5">
                       {item.skills.map((skill) => (
                         <span
                           key={skill}
-                          className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 text-[0.72rem] uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
+                          className="inline-flex max-w-full items-center rounded-full border border-slate-900/10 bg-slate-900/4 px-2 py-1 font-mono text-[0.68rem] uppercase tracking-[0.06em] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-neutral-400"
                         >
                           <span className="max-w-full whitespace-normal break-words leading-tight">
                             {skill}
@@ -699,12 +750,17 @@ function MobileTimelineCardSection({
                         </span>
                       ))}
                     </div>
-                    {actionLinks.length > 0 ? (
+                    {item.caseStudyUrl || actionLinks.length > 0 ? (
                       <div className="flex flex-wrap items-center gap-2">
+                        {item.caseStudyUrl ? (
+                          <Link className={mobileLinkClass} href={item.caseStudyUrl} onClick={(event) => event.stopPropagation()}>
+                            Case study <Arrow />
+                          </Link>
+                        ) : null}
                         {actionLinks.map((link) => (
                           <a
                             key={link.label}
-                            className="inline-flex items-center rounded-full border border-slate-900/12 px-3 py-2 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-slate-700 transition-colors duration-200 hover:bg-slate-900 hover:text-white dark:border-white/12 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-black"
+                            className={mobileLinkClass}
                             href={link.href}
                             onClick={(event) => {
                               event.stopPropagation();
@@ -712,7 +768,7 @@ function MobileTimelineCardSection({
                             rel="noopener noreferrer"
                             target="_blank"
                           >
-                            {link.label}
+                            {link.label} <Arrow dir="up-right" />
                           </a>
                         ))}
                       </div>
@@ -727,6 +783,9 @@ function MobileTimelineCardSection({
     </motion.section>
   );
 }
+
+const mobileLinkClass =
+  "inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-slate-900/12 px-3 text-[0.85rem] font-medium text-slate-700 dark:border-white/12 dark:text-neutral-200";
 
 function useMobileDimensions() {
   const [dimensions, setDimensions] = useState({

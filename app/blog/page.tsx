@@ -1,177 +1,79 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { HomeDock } from "@/components/AppBar";
-import { SquarePenIcon } from "@/components/icons/square-pen-icon";
+import { Arrow } from "@/components/arrow";
+import { AppleStyleDock } from "@/components/ui/demo";
 import { PixelFrame } from "@/components/ui/pixel-frame";
-import {
-  blogTopics,
-  getFeaturedPost,
-  getNonFeaturedPosts,
-  shortNotes,
-} from "@/data/blog-posts";
+import { blogPosts, getFeaturedPost } from "@/data/blog-posts";
 
-export const metadata: Metadata = { title: "Writing — Aditya Singh", description: "Build notes on PebbleCode, Tuku, and claim-level AI verification from Aditya Singh.", alternates: {canonical: "/blog"}, openGraph: {title: "Writing — Aditya Singh", description: "Specific notes from software projects and experiments.", url: "/blog"} };
+export const metadata: Metadata = { title: "Writing", description: "Build notes on PebbleCode, Tuku, and claim-level AI verification from Aditya Singh.", alternates: {canonical: "/blog"}, openGraph: {title: "Writing · Aditya Singh", description: "Specific notes from software projects and experiments.", url: "/blog", images: ["/opengraph-image"]} };
 
 export default function BlogPage() {
-  const featuredPost = getFeaturedPost();
-  const posts = getNonFeaturedPosts();
+  const featured = getFeaturedPost();
+  const buildNotes = blogPosts.filter((post) => post.date === "Undated build note" && post !== featured);
+  const shortNotes = blogPosts.filter((post) => post.date !== "Undated build note");
 
   return (
-    <main id="main-content" className="relative min-h-screen overflow-x-hidden bg-white text-slate-900 dark:bg-neutral-950 dark:text-white">
-      <HomeDock />
+    <main id="main-content" className="portfolio-page">
+      <div className="page-shell">
+        <header className="eyebrow-row label"><Link href="/">Addy / Aditya Singh</Link><span>Notebook</span></header>
+        <section className="page-intro">
+          <p className="eyebrow">Notebook</p>
+          <h1>Writing</h1>
+          <p>Build notes from my own projects: what I tried, the tradeoff I made, and what I would test next. They are working notes, so most are short and none are dated.</p>
+        </section>
 
-      <section className="mx-auto w-full max-w-5xl px-5 pb-6 pt-16 sm:px-6 sm:pt-20 md:px-8 md:pt-24 lg:px-10">
-        <div className="max-w-2xl md:pl-28">
-          <p className="text-[1.02rem] uppercase tracking-[0.24em] text-neutral-700 dark:text-white sm:text-[1.08rem]">
-            notebook
-          </p>
-          <div className="mt-2 flex items-center gap-3">
-            <h1 className="text-[2.2rem] font-medium tracking-tight text-black dark:text-white sm:text-[2.6rem] md:text-[3.2rem]">
-              Writing
-            </h1>
-            <SquarePenIcon
-              loop
-              className="inline-flex translate-y-[1px] text-neutral-900 dark:text-white"
-              size={48}
-            />
-          </div>
-          <p className="mt-3 max-w-[34rem] text-[1.08rem] leading-relaxed text-neutral-600 dark:text-neutral-400 sm:text-[1.14rem] md:text-[1.24rem]">
-            Notes on building, AI systems, experiments, and ideas I keep
-            returning to.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-5xl px-5 pt-4 sm:px-6 md:px-8 lg:px-10">
-        <div className="md:pl-28">
-          <div className="mb-4 flex items-center gap-3">
-            <span className="h-px w-10 bg-black/30 dark:bg-white/18" />
-            <p className="text-[0.84rem] uppercase tracking-[0.22em] text-neutral-500 dark:text-neutral-500">
-              Featured
-            </p>
-          </div>
-
-          <Link
-            className="pixel-panel group block max-w-3xl overflow-hidden bg-white/80 px-6 py-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-colors duration-200 dark:bg-black/70 dark:shadow-[0_0_40px_rgba(255,255,255,0.04)] sm:px-7 sm:py-7 md:px-8 md:py-8"
-            href={`/blog/${featuredPost.slug}`}
-          >
-            <PixelFrame variant="panel" />
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.98rem] uppercase tracking-[0.18em] text-neutral-700 dark:text-neutral-300">
-              <span>{featuredPost.date}</span>
-              <span className="h-1 w-1 rounded-full bg-neutral-400 dark:bg-neutral-600" />
-              <span>{featuredPost.readTime}</span>
-            </div>
-            <h2 className="mt-4 max-w-[18ch] text-[1.7rem] font-semibold leading-tight text-black transition-colors group-hover:text-neutral-700 dark:text-white dark:group-hover:text-neutral-200 sm:max-w-[22ch] sm:text-[1.95rem] md:text-[2.35rem]">
-              {featuredPost.title}
-            </h2>
-            <p className="mt-4 max-w-[44rem] text-[1.03rem] leading-relaxed text-neutral-600 dark:text-neutral-400 sm:text-[1.1rem] md:text-[1.18rem]">
-              {featuredPost.summary}
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {featuredPost.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="pixel-capsule min-h-[34px] px-3 py-0 text-[0.88rem] uppercase tracking-[0.14em] text-slate-700 dark:text-white"
-                >
-                  <PixelFrame variant="capsule" />
-                  <span className="pixel-capsule-label">{tag}</span>
-                </span>
+        <section className="home-section" aria-labelledby="build-notes">
+          <div className="section-index" id="build-notes">Build notes</div>
+          <div>
+            <Link className="pixel-panel featured-note" href={`/blog/${featured.slug}`}>
+              <PixelFrame variant="panel" />
+              <span className="label">Start here · {featured.tags[0]} · {featured.readTime}</span>
+              <h2>{featured.title}</h2>
+              <p>{featured.summary}</p>
+            </Link>
+            <ul className="note-list">
+              {buildNotes.map((post) => (
+                <li key={post.slug}>
+                  <Link href={`/blog/${post.slug}`}>
+                    <span className="label">{post.tags[0]} · {post.readTime}</span>
+                    <span className="note-title">{post.title}</span>
+                    <span className="note-summary">{post.summary}</span>
+                  </Link>
+                </li>
               ))}
-            </div>
-          </Link>
-        </div>
-      </section>
+            </ul>
+          </div>
+        </section>
 
-      <section className="mx-auto mt-14 w-full max-w-5xl px-5 sm:px-6 md:mt-16 md:px-8 lg:px-10">
-        <div className="md:pl-28">
-          <div className="mb-6 flex items-center gap-3">
-            <span className="h-px w-10 bg-black/30 dark:bg-white/18" />
-            <p className="text-[0.84rem] uppercase tracking-[0.22em] text-neutral-500 dark:text-neutral-500">
-              Writing Index
-            </p>
+        <section className="home-section" aria-labelledby="short-notes">
+          <div className="section-index" id="short-notes">Short notes</div>
+          <div>
+            <p>Smaller thoughts and one concept that isn’t built yet.</p>
+            <ul className="note-list compact">
+              {shortNotes.map((post) => (
+                <li key={post.slug}>
+                  <Link href={`/blog/${post.slug}`}>
+                    <span className="label">{post.date.replace("Undated ", "")} · {post.tags[0]}</span>
+                    <span className="note-title">{post.title}</span>
+                    <span className="note-summary">{post.summary}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
+        </section>
 
-          <div className="max-w-3xl divide-y divide-slate-900/8 dark:divide-white/8">
-            {posts.map((post) => (
-              <Link
-                key={post.slug}
-                className="group block py-5 first:pt-0 last:pb-0"
-                href={`/blog/${post.slug}`}
-              >
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.82rem] uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-500">
-                  <span>{post.date}</span>
-                  <span className="h-1 w-1 rounded-full bg-neutral-400 dark:bg-neutral-600" />
-                  <span>{post.readTime}</span>
-                  {post.tags[0] ? (
-                    <>
-                      <span className="h-1 w-1 rounded-full bg-neutral-400 dark:bg-neutral-600" />
-                      <span>{post.tags[0]}</span>
-                    </>
-                  ) : null}
-                </div>
-                <h3 className="mt-2 text-[1.28rem] font-semibold tracking-tight text-black transition-colors group-hover:text-neutral-700 dark:text-white dark:group-hover:text-neutral-200 sm:text-[1.4rem] md:text-[1.55rem]">
-                  {post.title}
-                </h3>
-                <p className="mt-2 max-w-[44rem] text-[1rem] leading-relaxed text-neutral-600 dark:text-neutral-400 sm:text-[1.05rem]">
-                  {post.summary}
-                </p>
-              </Link>
-            ))}
+        <section className="home-section" aria-labelledby="blog-contact">
+          <div className="section-index">Reply</div>
+          <div>
+            <h2 id="blog-contact">Disagree with a note?</h2>
+            <p>I’d like to hear it, especially if you have run into the same problem.</p>
+            <a className="text-link" href="mailto:build@addyvantage.me">build@addyvantage.me <Arrow dir="up-right" /></a>
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto mt-14 w-full max-w-5xl px-5 sm:px-6 md:mt-16 md:px-8 lg:px-10">
-        <div className="md:pl-28">
-          <div className="mb-5 flex items-center gap-3">
-            <span className="h-px w-10 bg-black/30 dark:bg-white/18" />
-            <p className="text-[0.84rem] uppercase tracking-[0.22em] text-neutral-500 dark:text-neutral-500">
-              Topics
-            </p>
-          </div>
-          <div className="flex max-w-3xl flex-wrap gap-2">
-            {blogTopics.map((topic) => (
-              <span
-                key={topic}
-                className="pixel-capsule min-h-[40px] px-3.5 py-0 text-[0.96rem] uppercase tracking-[0.15em] text-slate-700 dark:text-white"
-              >
-                <PixelFrame variant="capsule" />
-                <span className="pixel-capsule-label">{topic}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto mt-14 w-full max-w-5xl px-5 sm:px-6 md:mt-16 md:px-8 lg:px-10">
-        <div className="md:pl-28">
-          <div className="mb-6 flex items-center gap-3">
-            <span className="h-px w-10 bg-black/30 dark:bg-white/18" />
-            <p className="text-[0.84rem] uppercase tracking-[0.22em] text-neutral-500 dark:text-neutral-500">
-              Notes
-            </p>
-          </div>
-          <div className="grid max-w-3xl gap-4 md:grid-cols-3">
-            {shortNotes.map((note) => (
-              <div
-                key={note.title}
-                className="pixel-panel bg-slate-900/[0.03] px-5 py-5 dark:bg-white/[0.03]"
-              >
-                <PixelFrame variant="panel" />
-                <p className="text-[1.22rem] leading-relaxed text-black dark:text-white md:text-[1.3rem]">
-                  {note.title}
-                </p>
-                <p className="mt-3 text-[1.1rem] leading-relaxed text-neutral-600 dark:text-neutral-400 md:text-[1.16rem]">
-                  {note.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <footer className="contact-footer mx-auto max-w-5xl px-5"><h2>Continue the conversation.</h2><a className="button-primary" href="mailto:adityasingh0929@gmail.com">Email Addy ↗</a></footer>
+        </section>
+      </div>
+      <AppleStyleDock />
     </main>
   );
 }

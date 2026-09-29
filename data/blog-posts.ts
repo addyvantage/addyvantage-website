@@ -29,12 +29,10 @@ const drafts: Omit<BlogPost, "readTime">[] = [
 ];
 
 export const blogPosts: BlogPost[] = drafts.map(post => ({...post, readTime: `${Math.max(1, Math.ceil((post.title + " " + post.summary + " " + post.content.join(" ")).trim().split(/\s+/).length / 200))} min read` }));
-export const blogTopics = ["AI systems", "Developer tools", "Product thinking", "Architecture", "Experiments"];
 export const shortNotes = [
   { title: "Keep the failed attempt visible.", body: "It often carries the context needed for the next useful hint." },
   { title: "Ask who owns task state.", body: "A worker transcript should help inspect a handoff, not become its only record." },
   { title: "Show the uncertain claim.", body: "A risk label is easier to trust when the evidence and its limits are visible." }
 ];
 export function getFeaturedPost() { return blogPosts.find(post => post.featured) ?? blogPosts[0]; }
-export function getNonFeaturedPosts() { return blogPosts.filter(post => !post.featured); }
 export function getPostBySlug(slug: string) { return blogPosts.find(post => post.slug === slug); }
